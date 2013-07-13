@@ -95,41 +95,132 @@ function intialLoad(error, topology, tornados){
 			state.filter( (centered != null) ? abv : null );
 			setTimeout(renderAll, 500); 
 		});
-
 	debugger;
-
-	circles = g.selectAll("circle").data(tornados).enter()
-			.append("circle")
-				.attr("cx", function(d){ return proj([d.slon, d.slat])[0]; })
-				.attr("cy", function(d){ return proj([d.slon, d.slat])[1]; })
-				.attr("id", function(d, i){ return "TNum" + i; })
-				.attr("fill", "black")
-				.attr("r", .3)
-		.on("mouseover", function(d){
-			d3.select(this)
-				.attr("stroke", "black")
+	circles = g.selectAll("line").data(tornados).enter()
+			.append("line")
+				.attr("x1", function(d){ return proj([d.slon, d.slat])[0]; })
+				.attr("y1", function(d){ return proj([d.slon, d.slat])[1]; })
+				.attr("x2", function(d){ return proj([d.elon, d.elat])[0]; })
+				.attr("y2", function(d){ return proj([d.elon, d.elat])[1]; })
 				.attr("stroke-width", 1)
-				.attr("fill-opacity", 1);
+				//.attr("id", function(d, i){ return "TNum" + i; })
+				.attr("stroke", "black")
 
-			tooltip
-			    .style("left", (d3.event.pageX + 5) + "px")
-			    .style("top", (d3.event.pageY - 5) + "px")
-			    .transition().duration(300)
-			    .style("opacity", 1)
-			    .style("display", "block")
-
-			console.log(d.drg.dischargeNum);
-			console.log(d.hosID);
-
-			updateDetails(d);
-			})
-		.on("mouseout", function(d){
-			d3.select(this)
-				.attr("stroke", "")
-				.attr("fill-opacity", function(d){return 1;})
-
-			tooltip.transition().duration(700).style("opacity", 0);
+		drg.forEach(function(d){
+			d.dischargeNum 	= +d.dischargeNum;
+			d.avCharges 	= +d.avCharges;
+			d.avPayments 	= +d.avPayments;
 		});
+
+		hosIDmap = drg.map(function(d){ return d.hosID; });
+		hospitals.forEach(function(hospital){
+			if (hosIDmap.indexOf(hospital.hosID) != -1){
+				hospital.drg = drg[hosIDmap.indexOf(hospital.hosID)];
+			}
+			else{
+				hospital.drg = false;
+			}
+		});
+		
+		radiusScale.range([1, 5])
+					.domain(d3.extent(hospitals.map( function(d){ return d.drg ? d.drg.dischargeNum : undefined; } )));
+
+		colorScale.range(["#FFFF66", "#FFFF00", "#E68000", "#D94000", "#CC0000"])
+					.domain(hospitals.map( function(d){ return d.drg ? d.drg.avPayments : undefined; } ));
+		colorScale.range(['#add8e6', '#c2a2ad', 'purple', '#eb363a', '#ff0000']);
+
+		circles.transition().duration(1000)
+			.attr("r", 	function(d){ return d.drg ? radiusScale(d.drg.dischargeNum) : .2; })
+			.style("fill", function(d){ return d.drg ? colorScale(d.drg.avPayments) : 'black'; });
+
+		vHospitals = hospitals.filter(function(d){ return d.drg; });
+		vHospitalIDmap = vHospitals.map(function(d){ return d.hosID; });
+		vCircles = circles.filter(function(d){ return d.drg; });
+		hospitalCF = crossfilter(vHospitals);
+		all = hospitalCF.groupAll();
+
+		function getDischargeNum(d)	{ return d.drg.dischargeNum; }
+		dischargeInterval = (d3.max(vHospitals, getDischargeNum) - d3.min(vHospitals, getDischargeNum))/47;
+
+		function getavPayment(d)	{ return d.drg.avPayments; }
+		paymentInterval = (d3.max(vHospitals, getavPayment) - d3.min(vHospitals, getavPayment))/47;
+
+		function toGroup(value, interval){ return Math.floor(value/interval)*interval; }
+
+		dischargeNum = hospitalCF.dimension(getDischargeNum),
+		dischargeNums = dischargeNum.group(function(d){ return toGroup(d, dischargeInterval); }),
+
+		avPayment = hospitalCF.dimension(getavPayment),
+		avPayments = avPayment.group(function(d){ return toGroup(d, paymentInterval); }),
+
+		state = hospitalCF.dimension(function(d){ return d.state; });
+		states = state.group();
+
+		hosID = hospitalCF.dimension(function(d){ return d.hosID; }),
+		hosIDs = hosID.group();
+
+		var charts = [
+			barChart()
+				.dimension(dischargeNum)
+				.group(dischargeNums)
+				.x(d3.scale.linear()
+					.domain([	toGroup(d3.min(vHospitals, getDischargeNum), dischargeInterval), 
+								toGroup(d3.max(vHospitals, getDischargeNum), dischargeInterval)*48/47])
+					.rangeRound([0, 20*24]))
+				.barWidth(8),
+
+			barChart()
+				.dimension(avPayment)
+				.group(avPayments)
+				.x(d3.scale.linear()
+					.domain([	toGroup(d3.min(vHospitals, getavPayment), paymentInterval), 
+								toGroup(d3.max(vHospitals, getavPayment), paymentInterval)*48/47])
+					.rangeRound([0,20*24]))
+				.barWidth(8)
+		];
+
+		var chart = d3.selectAll(".chart")
+				.data(charts)
+				.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
+
+		d3.selectAll("#total")
+				.text(hospitalCF.size());
+
+
+		function render(method){
+			d3.select(this).call(method);
+		}
+
+
+		oldFilterObject = {};
+		hosIDs.all().forEach(function(d){ oldFilterObject[d.key] = d.value; });
+
+		renderAll = function(){
+			chart.each(render);
+			zoomRender = false;
+
+			newFilterObject = {};
+			hosIDs.all().forEach(function(d){ newFilterObject[d.key] = d.value; });
+
+			vCircles.filter(function(d){ return oldFilterObject[d.hosID] != newFilterObject[d.hosID]; })
+					.transition().duration(500)
+						.attr("r", function(d){ return 2*radiusScale(d.drg.dischargeNum)*newFilterObject[d.hosID] })
+					.transition().delay(550).duration(500)
+						.attr("r", function(d){ return   radiusScale(d.drg.dischargeNum)*newFilterObject[d.hosID] });
+
+			oldFilterObject = newFilterObject;
+
+			// d3.select("#active").text(all.value());
+
+		}
+
+		window.reset = function(i){
+			charts[i].filter(null);
+			renderAll();
+		}
+
+		renderAll();
+
 }
 
 function renderAll(){}
