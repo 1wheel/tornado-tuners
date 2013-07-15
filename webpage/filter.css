@@ -100,9 +100,16 @@ div.tooltip {
   margin-bottom: 10px;
 }
 
-.chart {
+.bChart {
   display: inline-block;
   height: 151px;
+  margin-bottom: 20px;
+}
+
+.cChart {
+  display: inline-block;
+  height: 200px;
+  width: 200px;
   margin-bottom: 20px;
 }
 

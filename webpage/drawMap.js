@@ -34,7 +34,7 @@ function clicked(d) {
   if (d && centered !== d) {
     centroid = path.centroid(d);
     x = centroid[0];
-    y = centroid[1];
+    y = centroid[1] - 40;
     k = 4;
     centered = d;
   } else {
@@ -62,8 +62,8 @@ function clicked(d) {
 var stateNameToAbv = {"Alabama":"AL","Alaska":"AK","American Samoa":"AS","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","District Of Columbia":"DC","Federated States Of Micronesia":"FM","Florida":"FL","Georgia":"GA","Guam":"GU","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Marshall Islands":"MH","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Northern Mariana Islands":"MP","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Palau":"PW","Pennsylvania":"PA","Puerto Rico":"PR","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virgin Islands":"VI","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
 
 var widthScale = d3.scale.pow().exponent(.5);
-
-var colorScale = d3.scale.pow().exponent(.5);
+var colorScale = d3.scale.log();
+var opacityScale = d3.scale.linear();
 
 var parseDate = d3.time.format("%x %H:%M").parse;
 
@@ -74,13 +74,13 @@ var tooltip = d3.select("body").append("div")
 
 queue()
 	.defer(d3.json, "us-states.json")
-	.defer(d3.csv, "reduced.csv")
+	.defer(d3.csv, "filteredTornados.csv")
 	//.defer(d3.csv, "drg/057.csv")
 	.await(intialLoad);
 
 function intialLoad(error, topology, tornados){
 	tornados.forEach(function(tornado, i){
-		['casualty', 'elat', 'elon', 'slat', 'slon', 'fscale', 'length', 'width'].forEach(function(field){
+		['inj', 'fat', 'elat', 'elon', 'slat', 'slon', 'fscale', 'length', 'width'].forEach(function(field){
 			tornado[field] = +tornado[field];});
 		tornado['index'] = i;
 		tornado['time'] = parseDate(tornado['time']);
@@ -89,8 +89,9 @@ function intialLoad(error, topology, tornados){
 
 	vtornados = tornados.filter(function(d){ return d.length > 10; });
 
-	widthScale.range([.25, 2]).domain(d3.extent(tornados.map(function(d){ return d.width; })));
-	colorScale.range(['blue', 'red']).domain(d3.extent(tornados.map(function(d){ return d.fscale; })));
+	widthScale.range([.25, 2]).domain(d3.extent(vtornados.map(function(d){ return d.width; })));
+	colorScale.range(['blue', 'red']).domain(d3.extent(vtornados.map(function(d){ return d.inj + 1; })));
+	opacityScale.range([.3, .8]).domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
 
 	stateBorders = g.selectAll("path")
 		.data(topology.features)
@@ -101,7 +102,10 @@ function intialLoad(error, topology, tornados){
 		.on("click", function(d){ 
 			var abv = stateNameToAbv[d.properties.name];
 			clicked(d3.select(this).datum());
-			state.filter( (centered != null) ? abv : null );
+			state.filter( function(stateList){ 
+				if(centered == null){ return true; }
+				return stateList.indexOf(abv) != -1;
+			});
 			setTimeout(renderAll, 500); 
 		});
 
@@ -112,7 +116,9 @@ function intialLoad(error, topology, tornados){
 			.attr("y2", function(d){ return proj([d.slon, d.slat])[1]; })
 			.attr("stroke-width",function(d){ return widthScale(d.width); })
 			//.attr("id", function(d, i){ return "TNum" + i; })
-			.attr("stroke", function(d){ return colorScale(d.fscale); })
+			.attr("stroke", function(d){ return colorScale(d.inj + 1); })
+			.attr("opacity", function(d){ return opacityScale(d.fscale); })
+			.attr("stroke-linecap", "butt")
 			.style("pointer-events", "none")
 
 	lines.transition().duration(3000)
@@ -126,22 +132,8 @@ function intialLoad(error, topology, tornados){
 	tornadoIndex = tornadoCF.dimension(function(d){ return d.index; });
 	tornadoIndexs = tornadoIndex.group();
 
-	state = tornadoCF.dimension(function(d){ return d.state; });
+	state = tornadoCF.dimension(function(d){ return d.states; });
 	states = state.group();
-
-		// function getDischargeNum(d)	{ return d.drg.dischargeNum; }
-		// dischargeInterval = (d3.max(vHospitals, getDischargeNum) - d3.min(vHospitals, getDischargeNum))/47;
-
-		// function getavPayment(d)	{ return d.drg.avPayments; }
-		// paymentInterval = (d3.max(vHospitals, getavPayment) - d3.min(vHospitals, getavPayment))/47;
-
-		// function toGroup(value, interval){ return Math.floor(value/interval)*interval; }
-
-		// dischargeNum = hospitalCF.dimension(getDischargeNum),
-		// dischargeNums = dischargeNum.group(function(d){ return toGroup(d, dischargeInterval); }),
-
-		// avPayment = hospitalCF.dimension(getavPayment),
-		// avPayments = avPayment.group(function(d){ return toGroup(d, paymentInterval); }),
 
 	hour = tornadoCF.dimension(function(d){ return d.time.getHours(); });
 	hours = hour.group();
@@ -149,7 +141,7 @@ function intialLoad(error, topology, tornados){
 	year = tornadoCF.dimension(function(d){ return Math.floor(d.time.getFullYear()/1)*1; });
 	years = year.group();
 
-	var charts = [
+	var bCharts = [
 		barChart()
 			.dimension(hour)
 			.group(hours)
@@ -163,8 +155,18 @@ function intialLoad(error, topology, tornados){
 			.group(years)
 			.x(d3.scale.linear()
 				.domain([1950, 2013])
-				.rangeRound([0,20*24]))
+				.rangeRound([0,200]))
 			.barWidth(5.8)
+	];
+
+	var cCharts = [
+		circleChart()
+			.dimension(hour)
+			.group(hours)
+			.x(d3.scale.linear()
+				.domain([0, 24])
+				.rangeRound([0, 20*24]))
+			.barWidth(8)
 	];
 
 	d3.selectAll("#total")
@@ -178,7 +180,8 @@ function intialLoad(error, topology, tornados){
 	tornadoIndexs.all().forEach(function(d){ oldFilterObject[d.key] = d.value; });
 
 	renderAll = function(){
-		chart.each(render);
+		bChart.each(render);
+		cChart.each(render);
 
 		zoomRender = false;
 
@@ -197,6 +200,7 @@ function intialLoad(error, topology, tornados){
 					.attr("x2", function(d){ return proj([d.slon, d.slat])[0]; })
 					.attr("y2", function(d){ return proj([d.slon, d.slat])[1]; });
 
+		//enter animation
 		lines.filter(function(d){ return oldFilterObject[d.index] < newFilterObject[d.index]; })
 					.attr('opacity', 1)
 				.transition().duration(1400)
@@ -204,30 +208,29 @@ function intialLoad(error, topology, tornados){
 					.attr("y2", function(d){ return proj([d.elon, d.elat])[1]; })
 
 		oldFilterObject = newFilterObject;
+		
+		// update dealths/cost/ect here
 		// d3.select("#active").text(all.value());
 	}
 
-	window.reset = function(i){
-		charts[i].filter(null);
+	window.breset = function(i){
+		bCharts[i].filter(null);
+		zoomRender = true;
+		renderAll();
+	}
+	window.creset = function(i){
+		cCharts[i].filter(null);
+		zoomRender = true;
 		renderAll();
 	}
 
-	var chart = d3.selectAll(".chart")
-			.data(charts)
+	var bChart = d3.selectAll(".bChart")
+			.data(bCharts)
+			.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
+	
+	var cChart = d3.selectAll(".cChart")
+			.data(cCharts)
 			.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
 
 	renderAll();
-}
-
-var printDetails = [{'var': 'name', 'print': 'Name'}];
-function updateDetails(metor){
-	tooltip.selectAll("div").remove();
-	tooltip.selectAll("div").data(printDetails).enter()
-		.append("div")
-			.append('span')
-				.text(function(d){return d.print + ": ";})				
-				.attr("class", "boldDetail")
-			.insert('span')
-				.text(function(d){return metor[d.var];})
-				.attr("class", "normalDetail");
 }

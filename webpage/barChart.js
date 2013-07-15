@@ -26,7 +26,7 @@ function barChart() {
       // Create the skeletal chart.
       if (g.empty()) {
         div.select(".title").append("a")
-            .attr("href", "javascript:reset(" + id + ")")
+            .attr("href", "javascript:breset(" + id + ")")
             .attr("class", "reset")
             .text("reset")
             .style("display", "none");

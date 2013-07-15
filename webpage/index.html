@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="filter.css" />
 <body>
 	<span>
-		<h1>Tornado Tuner</h1>
+		<h1>Twister Twisters</h1>
 		
 		<span id="instructions">
 			Mouseover and click map for details. Click and drag histograms to crossfilter.
@@ -12,12 +12,16 @@
 	<div id="charts">
 		<div id="map" class="display"></div>
 
-		<div id="year-chart" class="chart display">
-			<div class="title">Volume</div>
+		<div id="year-chart" class="bChart display">
+			<div class="title">Hour</div>
 		</div>
 
-		<div id="mass-chart" class="chart display">
-			<div class="title">Cost</div>
+		<div id="mass-chart" class="bChart display">
+			<div class="title">Year</div>
+		</div>
+
+		<div id="year-chart" class="cChart display">
+			<div class="title">Hour</div>
 		</div>
 	</div>
 
@@ -38,6 +42,7 @@
 <script src="lib/queue.js"></script>
 <script src="lib/crossfilter.js"></script>
 <script src="barChart.js"></script>
+<script src="circleChart.js"></script>
 <script src="drawMap.js"></script>
 
 </html>
