@@ -12,6 +12,11 @@ var proj = d3.geo.azimuthalEqualArea()
 
 var path = d3.geo.path().projection(proj);
 
+var zoom = d3.behavior.zoom()
+    .translate(proj.translate())
+    .scale(proj.scale())
+    .scaleExtent([height*.33, 4 * height])
+    .on("zoom", zoom);
 
 var svg = d3.select("#map").append("svg")
 		.attr("width", width)
@@ -19,6 +24,13 @@ var svg = d3.select("#map").append("svg")
 
 var g = svg.append("g");
 
+function zoom() {
+	proj.translate(d3.event.translate).scale(d3.event.scale);
+	g.selectAll("path").attr("d", path);
+	circles
+  		.attr("cx", function(d){return proj([d.long, d.lat])[0];})
+		.attr("cy", function(d){return proj([d.long, d.lat])[1];});
+}
 
 function clicked(d) {
 
@@ -26,7 +38,7 @@ function clicked(d) {
     centroid = path.centroid(d);
     x = centroid[0];
     y = centroid[1] - 40;
-    k = (d.id == "48" || d.id == "06") ? 2 : 4;
+    k = 4;
     centered = d;
   } else {
     x = width / 2;
@@ -54,7 +66,7 @@ var stateNameToAbv = {"Alabama":"AL","Alaska":"AK","American Samoa":"AS","Arizon
 
 var widthScale = d3.scale.pow().exponent(.5);
 var colorScale = d3.scale.log();
-var opacityScale = d3.scale.quantile();
+var opacityScale = d3.scale.linear();
 
 var parseDate = d3.time.format("%x %H:%M").parse;
 
@@ -89,7 +101,7 @@ function intialLoad(error, topology, tornados, usGrey){
 
 	widthScale.range([.25, 2]).domain(d3.extent(vtornados.map(function(d){ return d.width; })));
 	colorScale.range(['blue', 'red']).domain(d3.extent(vtornados.map(function(d){ return d.inj + 1; })));
-	opacityScale.range(d3.range(.2, 1, .1)).domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
+	opacityScale.range([.3, .8]).domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
 
 	var defs = g.append("defs");
 
@@ -112,15 +124,16 @@ function intialLoad(error, topology, tornados, usGrey){
 	g.append("use")
 	  .attr("xlink:href", "#land");
 
-	stateBorders = g.selectAll(".border")
+	stateBorders = g.selectAll("path")
 		.data(topology.features)
 	.enter()
 		.append("svg:path")
 		.attr("d", path)
+		.attr("id", "stateBorders")
 		.attr("class", "border")
 		.on("click", function(d){ 
 			var abv = stateNameToAbv[d.properties.name];
-			clicked(d);
+			clicked(d3.select(this).datum());
 			state.filter( function(stateList){ 
 				if(centered == null){ return true; }
 				return stateList.indexOf(abv) != -1;

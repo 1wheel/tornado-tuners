@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+
+</style>
+<body>
+
+<a href="zoom.on('zoom', function(d){ console.log('no zooming!'); }">Disable zoom event</a>
+<a href="zoom.scale(1).translate([0,0]).event(zoomRect)">Disable zoom event</a>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 960,
+    height = 500;
+
+var path = d3.geo.path()
+    .projection(null);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height) 
+    .call(zoom);
+
+var zoom = d3.behavior.zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 8])
+    .on("zoom", zoomed);
+
+
+svg.selectAll("circle")
+      .data(d3.range(10)).enter()
+    .append("circle")
+      .attr("cx", 100)
+      .attr("cy", function(d){ return d*40; ;})
+      .attr("r",  function(d){ return d*2; })     
+      .attr("fill", "green");
+
+function zoomed() {
+  svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+</script>

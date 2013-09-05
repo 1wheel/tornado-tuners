@@ -3,9 +3,11 @@ body {
   font-family: "Verdana";
   margin: 0px auto;
   width: 1020px;
+  background-color: rgb(34, 34, 34);
+  color: rgb(170, 170, 170);
 }
 
-#body {
+#body{
   position: relative;
 }
 
@@ -55,10 +57,23 @@ form{
   text-rendering: optimizeLegibility;
 }
 
-path {
-  stroke: black;
-  stroke-width: 0.25px;
-  fill: #fafafa;
+
+.border{  
+  fill: black;
+  fill-opacity: .3;
+
+  stroke: white;
+  stroke-width: .1px;
+
+}
+
+#land {
+  fill-opacity: 0;
+  fill: green;
+}
+
+.stateBoarder{
+  display: none;
 }
 
 div.tooltip {
