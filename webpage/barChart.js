@@ -57,8 +57,6 @@ function barChart() {
             .attr("transform", "translate(0," + height + ")")
             .call(axis);
 
-        t = g;
-
         // Initialize the brush component with pretty resize handles.
         var gBrush = g.append("g").attr("class", "brush").call(brush);
         gBrush.selectAll("rect").attr("height", height);

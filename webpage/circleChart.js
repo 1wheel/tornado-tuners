@@ -55,77 +55,18 @@ function circleChart() {
             .data(group.all()).enter().append("path")
           .attr("class", "foreground bar");
 
-        var gBrush = g.append("g").attr("class", "brush").call(brush);
-        gBrush.selectAll("rect").attr("height", height);
-        gBrush.selectAll(".resize").append("path").attr("d", resizePath);
         }
 
-      // Only redraw the brush if set externally.
-      if (brushDirty) {
-        brushDirty = false;
-        g.selectAll(".brush").call(brush);
-        div.select(".title a").style("display", brush.empty() ? "none" : null);
-        if (brush.empty()) {
-          g.selectAll("#clip-" + id + " rect")
-              .attr("x", 0)
-              .attr("width", width);
-        } else {
-          var extent = brush.extent();
-          g.selectAll("#clip-" + id + " rect")
-              .attr("x", x(extent[0]))
-              .attr("width", x(extent[1]) - x(extent[0]));
-        }
-      }
 
-      d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      
+    //d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      
      div.select("svg").selectAll(".bar")
       .transition().duration(zoomRender ? 500 : 0)
       .attr("d", arcGen);
     });
 
-    function resizePath(d) {
-      var e = +(d == "e"),
-          x = e ? 1 : -1,
-          y = height / 3;
-      return "M" + (.5 * x) + "," + y
-          + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
-          + "V" + (2 * y - 6)
-          + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
-          + "Z"
-          + "M" + (2.5 * x) + "," + (y + 8)
-          + "V" + (2 * y - 8)
-          + "M" + (4.5 * x) + "," + (y + 8)
-          + "V" + (2 * y - 8);
-    }
 
   }
 
-  brush.on("brushstart.chart", function() {
-    var div = d3.select(this.parentNode.parentNode.parentNode);
-    div.select(".title a").style("display", null);
-  });
-
-  brush.on("brush.chart", function() {
-    var g = d3.select(this.parentNode),
-        extent = brush.extent();
-    if (round) g.select(".brush")
-        .call(brush.extent(extent = extent.map(round)))
-      .selectAll(".resize")
-        .style("display", null);
-    g.select("#clip-" + id + " rect")
-        .attr("x", x(extent[0]))
-        .attr("width", x(extent[1]) - x(extent[0]));
-    dimension.filterRange(extent);
-  });
-
-  brush.on("brushend.chart", function() {
-    if (brush.empty()) {
-      var div = d3.select(this.parentNode.parentNode.parentNode);
-      div.select(".title a").style("display", "none");
-      div.select("#clip-" + id + " rect").attr("x", null).attr("width", "100%");
-      dimension.filterAll();
-    }
-  });
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;
@@ -141,9 +82,6 @@ function circleChart() {
     return chart;
   };
 
-  function logFormat(d){
-    return "" + ((d <= 10000000) ? d : d.toExponential())
-  }
 
   chart.y = function(_) {
     if (!arguments.length) return y;
