@@ -1,36 +1,23 @@
-function circleChart() {
-  if (!circleChart.id) circleChart.id = 0;
+function barChart() {
+  if (!barChart.id) barChart.id = 0;
 
-  var margin = {top: 10, right: 10, bottom: 10, left: 10},
+  var margin = {top: 10, right: 10, bottom: 20, left: 10},
       x,
       y = d3.scale.linear().range([100, 0]),
-      id = circleChart.id++,
+      id = barChart.id++,
       axis = d3.svg.axis().orient("bottom"),
       brush = d3.svg.brush(),
       brushDirty,
       dimension,
       group,
       round,
-      barWidth,
-      size = 200,
-      heightScale,
-      numGroups;
-
-  var arcGen = d3.svg.arc()
-    .innerRadius( function(d, i){ return 30; })
-    .outerRadius( function(d, i){ return heightScale(d.value); })
-    .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - 1); })
-    .endAngle(    function(d, i){ return Math.PI*2/numGroups*i; });
-
-  heightScale = d3.scale.linear().range([30, 100]);
+      barWidth;
 
   function chart(div) {
-    var width = size;
-        height = size;
+    var width = x.range()[1],
+        height = y.range()[0];
 
     y.domain([0, group.top(1)[0].value]);
-    numGroups = group.all().length;
-    heightScale.domain(d3.extent(group.all().map(function(d){ return d.value; })));
 
     div.each(function() {
       var div = d3.select(this),
@@ -39,7 +26,7 @@ function circleChart() {
       // Create the skeletal chart.
       if (g.empty()) {
         div.select(".title").append("a")
-            .attr("href", "javascript:creset(" + id + ")")
+            .attr("href", "javascript:breset(" + id + ")")
             .attr("class", "reset")
             .text("reset")
             .style("display", "none");
@@ -47,18 +34,36 @@ function circleChart() {
         g = div.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + (margin.left + size/2) + "," 
-                                            + (margin.top  + size/2) + ")");
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-        div.select("g").selectAll(".bar")
-            .data(group.all()).enter().append("path")
-          .attr("class", "foreground bar");
+        g.append("clipPath")
+            .attr("id", "clip-" + id)
+          .append("rect")
+            .attr("width", width)
+            .attr("height", height);
 
+        g.selectAll(".bar")
+            .data(["background", "foreground"])
+          .enter().append("path")
+            .attr("class", function(d) { return d + " bar"; })
+            .datum(group.all());
+
+        g.selectAll(".foreground.bar")
+            .attr("clip-path", "url(#clip-" + id + ")");
+
+        g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(axis);
+
+        t = g;
+
+        // Initialize the brush component with pretty resize handles.
         var gBrush = g.append("g").attr("class", "brush").call(brush);
         gBrush.selectAll("rect").attr("height", height);
         gBrush.selectAll(".resize").append("path").attr("d", resizePath);
-        }
+      }
 
       // Only redraw the brush if set externally.
       if (brushDirty) {
@@ -77,11 +82,20 @@ function circleChart() {
         }
       }
 
-      d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      
-     div.select("svg").selectAll(".bar")
-      .transition().duration(zoomRender ? 500 : 0)
-      .attr("d", arcGen);
+      g.selectAll(".bar").transition().duration(zoomRender ? 500 : 0).attr("d", barPath);
     });
+
+    function barPath(groups) {
+      var path = [],
+          i = -1,
+          n = groups.length,
+          d;
+      while (++i < n) {
+        d = groups[i];
+        path.push("M", x(d.key), ",", height, "V", y(d.value), "h", barWidth, "V", height);
+      }
+      return path.join("");
+    }
 
     function resizePath(d) {
       var e = +(d == "e"),
@@ -97,7 +111,6 @@ function circleChart() {
           + "M" + (4.5 * x) + "," + (y + 8)
           + "V" + (2 * y - 8);
     }
-
   }
 
   brush.on("brushstart.chart", function() {

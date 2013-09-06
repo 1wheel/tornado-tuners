@@ -19,7 +19,7 @@ function circleChart() {
   var arcGen = d3.svg.arc()
     .innerRadius( function(d, i){ return 30; })
     .outerRadius( function(d, i){ return heightScale(d.value); })
-    .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - 1); })
+    .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - .99); })
     .endAngle(    function(d, i){ return Math.PI*2/numGroups*i; });
 
   heightScale = d3.scale.linear().range([30, 100]);
@@ -77,8 +77,7 @@ function circleChart() {
         }
       }
 
-      d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      
-     div.select("svg").selectAll(".bar")
+      div.select("svg").selectAll(".bar")
       .transition().duration(zoomRender ? 500 : 0)
       .attr("d", arcGen);
     });

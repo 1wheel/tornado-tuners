@@ -1,0 +1,188 @@
+
+body {
+  font-family: "Verdana";
+  margin: 0px auto;
+  width: 1020px;
+}
+
+#body {
+  position: relative;
+}
+
+footer {
+  padding: 2em 0 1em 0;
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-top: .3em;
+  margin-bottom: 0;
+  display: inline-block;
+}
+
+#instructions{
+  font-size: 90%;
+  margin-left: 50px;
+}
+
+h1 + h2 {
+  margin-top: 0;
+}
+
+h2 {
+  font-weight: 400;
+  font-size: 28px;
+}
+
+h1, h2 {
+  font-family: "Yanone Kaffeesatz";
+  text-rendering: optimizeLegibility;
+}
+
+form{
+  display: inline-block;
+}
+
+#formDiv{
+  display: inline-block;
+  width: 200px;
+}
+
+#body > p {
+  line-height: 1.5em;
+  width: 640px;
+  text-rendering: optimizeLegibility;
+}
+
+path {
+  stroke: black;
+  stroke-width: 0.25px;
+  fill: #fafafa;
+}
+
+div.tooltip {
+  position: absolute;
+  width: 200px;
+  padding: 8px;
+  font: 12px sans-serif;
+  background: #fff;
+  border: solid 1px #aaa;
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.boldDetail{
+  font-weight: bold;
+}
+
+.normalDetail{
+  font-weight: normal;
+}
+
+#charts {
+  padding: 10px 0;
+}
+
+#about{
+  text-align: center;
+  font-size: 90%;
+}
+
+#links{
+  text-align: right;
+  margin-right: 267px;
+  margin-bottom: 10px;
+}
+
+.blacklink{ 
+  color:black;
+  margin-bottom: 10px;
+}
+
+.bChart {
+  display: inline-block;
+  height: 151px;
+  margin-bottom: 20px;
+}
+
+.cChart {
+  display: inline-block;
+  height: 200px;
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+#map{
+  border-bottom: solid 1px #aaa;
+  border-top: solid 1px #aaa;
+  height: 500px;
+  overflow: hidden;
+}
+
+.active {
+  fill: lightgrey;
+}
+
+
+
+#mass-chart{
+  border-left: solid 1px #aaa;
+}
+
+.reset {
+  padding-left: 1em;
+  font-size: smaller;
+  color: #ccc;
+}
+
+.background.bar {
+  fill: #ccc;
+}
+
+.title{
+  text-align: left;
+  margin-left: 40px;
+  font-weight: bold;
+}
+
+#year-chart .foreground.bar {
+  fill: steelblue;
+}
+
+#mass-chart .foreground.bar {
+  fill:  steelblue;
+}
+
+.bar{
+  stroke:black;
+  stroke-width: 0; 
+}
+
+.axis path, .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.brush rect.extent {
+  fill: steelblue;
+  fill-opacity: .125;
+}
+
+.brush .resize path {
+  fill: #eee;
+  stroke: #666;
+}
+
+#mass-chart {
+  width: 500px;
+}
+
+#year-chart {
+  width: 500px;
+}
