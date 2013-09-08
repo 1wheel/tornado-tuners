@@ -6,7 +6,7 @@ function barChart() {
       y = d3.scale.linear().range([100, 0]),
       id = barChart.id++,
       axis = d3.svg.axis().orient("bottom"),
-      brush = d3.svg.brush(),
+      brush = d3.svg.cbrush(),
       brushDirty,
       dimension,
       group,

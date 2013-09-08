@@ -14,15 +14,23 @@ function circleChart() {
       barWidth,
       size = 200,
       heightScale,
-      numGroups;
+      numGroups,
+      innerRadius;
+
+  heightScale = d3.scale.linear().range([30, 100]);
 
   var arcGen = d3.svg.arc()
-    .innerRadius( function(d, i){ return 30; })
+    .innerRadius( function(d, i){ return heightScale.range()[0]; })
     .outerRadius( function(d, i){ return heightScale(d.value); })
     .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - 1); })
     .endAngle(    function(d, i){ return Math.PI*2/numGroups*i; });
 
-  heightScale = d3.scale.linear().range([30, 100]);
+  var brushGen = d3.svg.arc()
+    .innerRadius( function(d, i){ return heightScale.range()[0]; })
+    .outerRadius( function(d, i){ return heightScale.range()[1]; })
+    .startAngle(  0)
+    .endAngle(    200);
+
 
   function chart(div) {
     var width = size;
@@ -44,16 +52,23 @@ function circleChart() {
             .text("reset")
             .style("display", "none");
 
-        g = div.append("svg")
+        var g = div.append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + (margin.left + size/2) + "," 
                                             + (margin.top  + size/2) + ")");
 
-        div.select("g").selectAll(".bar")
-            .data(group.all()).enter().append("path")
-          .attr("class", "foreground bar");
+        g.selectAll(".bar")
+            .data(group.all()).enter()
+          .append("path")
+            .attr("class", "foreground bar");
+
+        g.selectAll('.cBackground')
+            .data([{}]).enter()
+          .append('path')
+            .attr('class', 'cBackground')
+            .attr('d', brushGen);
 
         }
 
@@ -63,6 +78,8 @@ function circleChart() {
       .transition().duration(zoomRender ? 500 : 0)
       .attr("d", arcGen);
     });
+
+    debugger;
 
 
   }
