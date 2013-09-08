@@ -2,8 +2,6 @@ function circleChart() {
   if (!circleChart.id) circleChart.id = 0;
 
   var margin = {top: 10, right: 10, bottom: 10, left: 10},
-      x,
-      y = d3.scale.linear().range([100, 0]),
       id = circleChart.id++,
       axis = d3.svg.axis().orient("bottom"),
       brush = d3.svg.brush(),
@@ -14,8 +12,7 @@ function circleChart() {
       barWidth,
       size = 200,
       heightScale,
-      numGroups,
-      innerRadius;
+      numGroups;
 
   heightScale = d3.scale.linear().range([30, 100]);
 
@@ -29,14 +26,13 @@ function circleChart() {
     .innerRadius( function(d, i){ return heightScale.range()[0]; })
     .outerRadius( function(d, i){ return heightScale.range()[1]; })
     .startAngle(  0)
-    .endAngle(    200);
+    .endAngle(    Math.PI*2);
 
 
   function chart(div) {
     var width = size;
         height = size;
 
-    y.domain([0, group.top(1)[0].value]);
     numGroups = group.all().length;
     heightScale.domain(d3.extent(group.all().map(function(d){ return d.value; })));
 
@@ -68,7 +64,8 @@ function circleChart() {
             .data([{}]).enter()
           .append('path')
             .attr('class', 'cBackground')
-            .attr('d', brushGen);
+            .attr('d', brushGen)
+            .style('opacity', .2);
 
         }
 
@@ -79,7 +76,6 @@ function circleChart() {
       .attr("d", arcGen);
     });
 
-    debugger;
 
 
   }
@@ -88,21 +84,6 @@ function circleChart() {
   chart.margin = function(_) {
     if (!arguments.length) return margin;
     margin = _;
-    return chart;
-  };
-
-  chart.x = function(_) {
-    if (!arguments.length) return x;
-    x = _;
-    axis.scale(x).ticks(5).tickFormat(d3.format(","));
-    brush.x(x);
-    return chart;
-  };
-
-
-  chart.y = function(_) {
-    if (!arguments.length) return y;
-    y = _;
     return chart;
   };
 
@@ -133,12 +114,6 @@ function circleChart() {
   chart.round = function(_) {
     if (!arguments.length) return round;
     round = _;
-    return chart;
-  };
-
-  chart.barWidth = function(_) {
-    if (!arguments.length) return barWidth;
-    barWidth = _;
     return chart;
   };
 

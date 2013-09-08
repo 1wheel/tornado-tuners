@@ -183,10 +183,6 @@ function intialLoad(error, topology, tornados, usGrey){
 		circleChart()
 			.dimension(hour)
 			.group(hours)
-			.x(d3.scale.linear()
-				.domain([0, 24])
-				.rangeRound([0, 20*24]))
-			.barWidth(8)
 	];
 
 	d3.selectAll("#total")
