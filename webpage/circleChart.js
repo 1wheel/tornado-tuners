@@ -4,7 +4,7 @@ function circleChart() {
   var margin = {top: 10, right: 10, bottom: 10, left: 10},
       id = circleChart.id++,
       axis = d3.svg.axis().orient("bottom"),
-      brush = d3.svg.brush(),
+      brush = d3.svg.cbrush().innerRadius(30).outerRadius(100),
       brushDirty,
       dimension,
       group,
@@ -21,13 +21,6 @@ function circleChart() {
     .outerRadius( function(d, i){ return heightScale(d.value); })
     .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - 1); })
     .endAngle(    function(d, i){ return Math.PI*2/numGroups*i; });
-
-  var brushGen = d3.svg.arc()
-    .innerRadius( function(d, i){ return heightScale.range()[0]; })
-    .outerRadius( function(d, i){ return heightScale.range()[1]; })
-    .startAngle(  0)
-    .endAngle(    Math.PI*2);
-
 
   function chart(div) {
     var width = size;
@@ -60,14 +53,8 @@ function circleChart() {
           .append("path")
             .attr("class", "foreground bar");
 
-        g.selectAll('.cBackground')
-            .data([{}]).enter()
-          .append('path')
-            .attr('class', 'cBackground')
-            .attr('d', brushGen)
-            .style('opacity', .2);
-
-        }
+        var gBrush = g.append("g").attr("class", "brush").call(brush);
+      }
 
 
     //d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      

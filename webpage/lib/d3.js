@@ -1795,7 +1795,7 @@ d3 = function() {
     return dsv;
   }
   d3.csv = d3_dsv(",", "text/csv");
-  d3.tsv = d3_dsv("	", "text/tab-separated-values");
+  d3.tsv = d3_dsv(" ", "text/tab-separated-values");
   var d3_timer_id = 0, d3_timer_byId = {}, d3_timer_queue = null, d3_timer_interval, d3_timer_timeout;
   d3.timer = function(callback, delay, then) {
     if (arguments.length < 3) {
@@ -8600,22 +8600,43 @@ d3 = function() {
 
 
   d3.svg.cbrush = function() {
-    var event = d3_eventDispatch(brush, "brushstart", "brush", "brushend"), x = null, y = null, resizes = d3_svg_brushResizes[0], extent = [ [ 0, 0 ], [ 0, 0 ] ], extentDomain;
+    var event = d3_eventDispatch(brush, "brushstart", "brush", "brushend"), 
+    x = null, 
+    y = null, 
+    resizes = [ "e", "w" ], 
+    extent = [ 0, 0 ],
+    extentDomain,
+    brushGen = d3.svg.arc();
+
     function brush(g) {
       g.each(function() {
-        var g = d3.select(this), bg = g.selectAll(".background").data([ 0 ]), fg = g.selectAll(".extent").data([ 0 ]), tz = g.selectAll(".resize").data(resizes, String), e;
+        var g = d3.select(this), 
+        bg = g.selectAll(".background").data([ 0 ]), 
+        fg = g.selectAll(".extent").data([ 0 ]), 
+        tz = g.selectAll(".resize").data(resizes, String), 
+        e;
+
         g.style("pointer-events", "all").on("mousedown.brush", brushstart).on("touchstart.brush", brushstart);
-        bg.enter().append("rect").attr("class", "background").style("visibility", "hidden").style("cursor", "crosshair");
-        fg.enter().append("rect").attr("class", "extent").style("cursor", "move");
-        tz.enter().append("g").attr("class", function(d) {
-          return "resize " + d;
-        }).style("cursor", function(d) {
-          return d3_svg_brushCursor[d];
-        }).append("rect").attr("x", function(d) {
-          return /[ew]$/.test(d) ? -3 : null;
-        }).attr("y", function(d) {
-          return /^[ns]/.test(d) ? -3 : null;
-        }).attr("width", 6).attr("height", 6).style("visibility", "hidden");
+        
+        bg.enter().append('path')
+            .attr('class', 'background')
+            .attr('d', brushGen.startAngle(0).endAngle(Math.PI*2))
+            .style('opacity', .2)
+            .style("cursor", "crosshair");
+
+        fg.enter().append("path")
+          .attr("class", "extent")
+          .attr('d', brushGen.startAngle(0).endAngle(Math.PI/5))
+          .style('opacity', .5)
+          .style("cursor", "move");
+
+        tz.enter().append("g")
+          .attr("class", function(d) { return "resize " + d; })
+          .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
+          .append("rect").attr("x", function(d) { return /[ew]$/.test(d) ? -3 : null; })
+          .attr("y", function(d) { return /^[ns]/.test(d) ? -3 : null; })
+          .attr("width", 6).attr("height", 6).style("visibility", "hidden");
+
         tz.style("display", brush.empty() ? "none" : null);
         tz.exit().remove();
         if (x) {
@@ -8631,22 +8652,44 @@ d3 = function() {
         redraw(g);
       });
     }
+
     function redraw(g) {
       g.selectAll(".resize").attr("transform", function(d) {
         return "translate(" + extent[+/e$/.test(d)][0] + "," + extent[+/^s/.test(d)][1] + ")";
       });
     }
+
     function redrawX(g) {
       g.select(".extent").attr("x", extent[0][0]);
       g.selectAll(".extent,.n>rect,.s>rect").attr("width", extent[1][0] - extent[0][0]);
     }
+
     function redrawY(g) {
       g.select(".extent").attr("y", extent[0][1]);
       g.selectAll(".extent,.e>rect,.w>rect").attr("height", extent[1][1] - extent[0][1]);
     }
+
     function brushstart() {
-      var target = this, eventTarget = d3.select(d3.event.target), event_ = event.of(target, arguments), g = d3.select(target), resizing = eventTarget.datum(), resizingX = !/^(n|s)$/.test(resizing) && x, resizingY = !/^(e|w)$/.test(resizing) && y, dragging = eventTarget.classed("extent"), center, origin = mouse(), offset;
-      var w = d3.select(d3_window).on("mousemove.brush", brushmove).on("mouseup.brush", brushend).on("touchmove.brush", brushmove).on("touchend.brush", brushend).on("keydown.brush", keydown).on("keyup.brush", keyup);
+      var target = this, 
+      eventTarget = d3.select(d3.event.target), 
+      event_ = event.of(target, arguments), 
+      g = d3.select(target), 
+      resizing = eventTarget.datum(), 
+      resizingX = !/^(n|s)$/.test(resizing) && x, 
+      resizingY = !/^(e|w)$/.test(resizing) && y, 
+      dragging = eventTarget.classed("extent"), 
+      center, 
+      origin = mouse(), 
+      offset;
+
+      var w = d3.select(d3_window)
+                .on("mousemove.brush", brushmove)
+                .on("mouseup.brush", brushend)
+                .on("touchmove.brush", brushmove)
+                .on("touchend.brush", brushend)
+                .on("keydown.brush", keydown)
+                .on("keyup.brush", keyup);
+                
       if (dragging) {
         origin[0] = extent[0][0] - origin[0];
         origin[1] = extent[0][1] - origin[1];
@@ -8757,12 +8800,19 @@ d3 = function() {
       resizes = d3_svg_brushResizes[!x << 1 | !y];
       return brush;
     };
-    brush.y = function(z) {
-      if (!arguments.length) return y;
-      y = z;
-      resizes = d3_svg_brushResizes[!x << 1 | !y];
+
+    brush.innerRadius = function(_){
+      if (!arguments.length) return brushGen.innerRadius();
+      brushGen.innerRadius(_);
       return brush;
-    };
+    }
+
+    brush.outerRadius = function(_){
+      if (!arguments.length) return brushGen.innerRadius();
+      brushGen.outerRadius(_);
+      return brush;
+    }
+
     brush.extent = function(z) {
       var x0, x1, y0, y1, t;
       if (!arguments.length) {

@@ -5,6 +5,7 @@ body {
   width: 1020px;
   background-color: rgb(34, 34, 34);
   color: rgb(170, 170, 170);
+  fill: rgb(170, 170, 170);
 }
 
 #body{
@@ -161,7 +162,7 @@ div.tooltip {
   font-weight: bold;
 }
 
-#year-chart .foreground.bar {
+.foreground.bar {
   fill: steelblue;
 }
 
@@ -194,10 +195,14 @@ div.tooltip {
   stroke: #666;
 }
 
-#mass-chart {
-  width: 500px;
+#fscale-chart {
+  width: 130px;
 }
 
 #year-chart {
-  width: 500px;
+  width: 220px;
+}
+
+#width-chart {
+  width: 200px;
 }

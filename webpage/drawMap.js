@@ -155,19 +155,40 @@ function intialLoad(error, topology, tornados, usGrey){
 	state = tornadoCF.dimension(function(d){ return d.states; });
 	states = state.group();
 
+	fscale = tornadoCF.dimension(function(d){ return d.fscale; });
+	fscales = fscale.group();
+
+
+	widthLin = tornadoCF.dimension(function(d){ return d.length; });
+	widthLins = widthLin.group();
+
+	var Wlb = 1.8;
+	width = tornadoCF.dimension(function(d){ return d.length; });
+	widths = width.group(function(d, i){ 
+	 return Math.pow(Wlb, Math.floor(Math.log(d)/Math.log(Wlb))) + 1; });
+
+	length = tornadoCF.dimension(function(d){ return d.length; });
+	lengths = length.group(function(d, i){ return d3.round(d, -1); });
+
+	fscale = tornadoCF.dimension(function(d){ return d.fscale; });
+	fscales = fscale.group();
+
 	hour = tornadoCF.dimension(function(d){ return d.time.getHours(); });
 	hours = hour.group();
+
+	month = tornadoCF.dimension(function(d){ return d.time.getMonth(); });
+	months = month.group();
 
 	year = tornadoCF.dimension(function(d){ return Math.floor(d.time.getFullYear()/1)*1; });
 	years = year.group();
 
 	var bCharts = [
 		barChart()
-			.dimension(hour)
-			.group(hours)
+			.dimension(fscale)
+			.group(fscales)
 			.x(d3.scale.linear()
-				.domain([0, 24])
-				.rangeRound([0, 20*24]))
+				.domain([0, 7])
+				.rangeRound([0, 100]))
 			.barWidth(8),
 
 		barChart()
@@ -176,13 +197,33 @@ function intialLoad(error, topology, tornados, usGrey){
 			.x(d3.scale.linear()
 				.domain([1950, 2013])
 				.rangeRound([0,200]))
-			.barWidth(5.8)
+			.barWidth(2),
+
+		barChart()
+			.dimension(width)
+			.group(widths)
+			.x(d3.scale.linear()
+				.domain([1, d3.max(widths.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0,200]))
+			.barWidth(3),
+
+		barChart()
+			.dimension(width)
+			.group(widths)
+			.x(d3.scale.log().base([Wlb])
+				.domain([1, d3.max(widths.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0,200]))
+			.barWidth(3)
 	];
 
 	cCharts = [
 		circleChart()
 			.dimension(hour)
-			.group(hours)
+			.group(hours),
+
+		circleChart()
+			.dimension(month)
+			.group(months)
 	];
 
 	d3.selectAll("#total")

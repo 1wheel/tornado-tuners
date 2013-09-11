@@ -4,7 +4,7 @@ function circleChart() {
   var margin = {top: 10, right: 10, bottom: 10, left: 10},
       id = circleChart.id++,
       axis = d3.svg.axis().orient("bottom"),
-      brush = d3.svg.brush(),
+      brush = d3.svg.cbrush().innerRadius(30).outerRadius(100),
       brushDirty,
       dimension,
       group,
@@ -60,12 +60,14 @@ function circleChart() {
           .append("path")
             .attr("class", "foreground bar");
 
-        g.selectAll('.cBackground')
-            .data([{}]).enter()
-          .append('path')
-            .attr('class', 'cBackground')
-            .attr('d', brushGen)
-            .style('opacity', .2);
+        // g.selectAll('.cBackground')
+        //     .data([{}]).enter()
+        //   .append('path')
+        //     .attr('class', 'cBackground')
+        //     .attr('d', brushGen)
+        //     .style('opacity', .2);
+
+        console.log('sdf');
 
         }
 
