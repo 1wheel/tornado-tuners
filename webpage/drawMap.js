@@ -53,15 +53,10 @@ function clicked(d) {
 var stateNameToAbv = {"Alabama":"AL","Alaska":"AK","American Samoa":"AS","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","District Of Columbia":"DC","Federated States Of Micronesia":"FM","Florida":"FL","Georgia":"GA","Guam":"GU","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Marshall Islands":"MH","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Northern Mariana Islands":"MP","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Palau":"PW","Pennsylvania":"PA","Puerto Rico":"PR","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virgin Islands":"VI","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
 
 var widthScale = d3.scale.pow().exponent(.5);
-var colorScale = d3.scale.log();
+var colorScale = d3.scale.linear();
 var opacityScale = d3.scale.quantile();
 
 var parseDate = d3.time.format("%x %H:%M").parse;
-
-var tooltip = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 1e-6)
-    .style("background", "rgba(250,250,250,.7)");
 
 queue()
 	.defer(d3.json, "us-states.json")
@@ -73,23 +68,26 @@ queue()
 function intialLoad(error, topology, tornados, usGrey){
 
 
-	tornados.forEach(function(tornado, i){
+	tornados.forEach(function(t, i){
 		['inj', 'fat', 'elat', 'elon', 'slat', 'slon', 'fscale', 'length', 'width'].forEach(function(field){
-			tornado[field] = +tornado[field];});
-		tornado['index'] = i;
-		tornado['time'] = parseDate(tornado['time']);
+			t[field] = +t[field];});
+		t['index'] = i;
+		t['time'] = parseDate(t['time']);
 
-		tornado['x1'] = proj([tornado.slon, tornado.slat])[0];
-		tornado['y1'] = proj([tornado.slon, tornado.slat])[1];
-		tornado['x2'] = proj([tornado.elon, tornado.elat])[0];
-		tornado['y2'] = proj([tornado.elon, tornado.elat])[1];
+		t['x1'] = proj([t.slon, t.slat])[0];
+		t['y1'] = proj([t.slon, t.slat])[1];
+		t['x2'] = proj([t.elon, t.elat])[0];
+		t['y2'] = proj([t.elon, t.elat])[1];
 
 	});
 	vtornados = tornados.filter(function(d){ return d.length > 12; });
 
-	widthScale.range([.25, 2]).domain(d3.extent(vtornados.map(function(d){ return d.width; })));
-	colorScale.range(['blue', 'red']).domain(d3.extent(vtornados.map(function(d){ return d.inj + 1; })));
-	opacityScale.range(d3.range(.2, 1, .1)).domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
+	widthScale.range([.25, 2.6])
+	          .domain(d3.extent(vtornados.map(function(d){ return d.width; })));
+	colorScale.range(['blue', 'red'])
+			  .domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
+	opacityScale.range(d3.range(.3, .8, .1))
+	          .domain(vtornados.map(function(d){ return d.fscale; }).sort());
 
 	var defs = g.append("defs");
 
@@ -136,7 +134,7 @@ function intialLoad(error, topology, tornados, usGrey){
 			.attr("y2", function(d){ return d.y1; })
 			.attr("stroke-width",function(d){ return widthScale(d.width); })
 			//.attr("id", function(d, i){ return "TNum" + i; })
-			.attr("stroke", function(d){ return colorScale(d.inj + 1); })
+			.attr("stroke", function(d){ return colorScale(d.fscale); })
 			.attr("opacity", function(d){ return opacityScale(d.fscale); })
 			.attr("stroke-linecap", "butt")
 			.style("pointer-events", "none")
@@ -158,21 +156,6 @@ function intialLoad(error, topology, tornados, usGrey){
 	fscale = tornadoCF.dimension(function(d){ return d.fscale; });
 	fscales = fscale.group();
 
-
-	widthLin = tornadoCF.dimension(function(d){ return d.length; });
-	widthLins = widthLin.group();
-
-	var Wlb = 1.8;
-	width = tornadoCF.dimension(function(d){ return d.length; });
-	widths = width.group(function(d, i){ 
-	 return Math.pow(Wlb, Math.floor(Math.log(d)/Math.log(Wlb))) + 1; });
-
-	length = tornadoCF.dimension(function(d){ return d.length; });
-	lengths = length.group(function(d, i){ return d3.round(d, -1); });
-
-	fscale = tornadoCF.dimension(function(d){ return d.fscale; });
-	fscales = fscale.group();
-
 	hour = tornadoCF.dimension(function(d){ return d.time.getHours(); });
 	hours = hour.group();
 
@@ -181,6 +164,19 @@ function intialLoad(error, topology, tornados, usGrey){
 
 	year = tornadoCF.dimension(function(d){ return Math.floor(d.time.getFullYear()/1)*1; });
 	years = year.group();
+
+	tWidth = tornadoCF.dimension(function(d){ return d.length; });
+	widthLins = tWidth.group(function(d, i){ return d3.round(d, -1); });
+
+	var Wlb = 1.8;
+	widthLogs = tWidth.group(function(d, i){ 
+	 return Math.pow(Wlb, Math.floor(Math.log(d)/Math.log(Wlb))) + 1; });
+
+	length = tornadoCF.dimension(function(d){ return d.length; });
+	lengths = length.group(function(d, i){ return d3.round(d, -1); });
+	
+	injury = tornadoCF.dimension(function(d){ return d.length; });
+	injurys = injury.group(function(d, i){ return d3.round(d, -1); });
 
 	var bCharts = [
 		barChart()
@@ -200,21 +196,36 @@ function intialLoad(error, topology, tornados, usGrey){
 			.barWidth(2),
 
 		barChart()
-			.dimension(width)
-			.group(widths)
+			.dimension(tWidth)
+			.group(widthLins)
 			.x(d3.scale.linear()
-				.domain([1, d3.max(widths.all().map(function(d, i){ return d.key; }))])
+				.domain([0, d3.max(widthLins.all().map(function(d, i){ return d.key; }))])
 				.rangeRound([0,200]))
 			.barWidth(3),
 
 		barChart()
-			.dimension(width)
-			.group(widths)
+			.dimension(tWidth)
+			.group(widthLogs)
 			.x(d3.scale.log().base([Wlb])
-				.domain([1, d3.max(widths.all().map(function(d, i){ return d.key; }))])
+				.domain([1, d3.max(widthLogs.all().map(function(d, i){ return d.key; }))])
 				.rangeRound([0,200]))
-			.barWidth(3)
-	];
+			.barWidth(3),
+
+		barChart()
+			.dimension(length)
+			.group(lengths)
+			.x(d3.scale.linear()
+				.domain([0, d3.max(lengths.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0,200]))
+			.barWidth(3),
+
+		barChart()
+			.dimension(injury)
+			.group(injurys)
+			.x(d3.scale.linear()
+				.domain([0, d3.max(injurys.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0,200]))
+			.barWidth(3)	];
 
 	cCharts = [
 		circleChart()
@@ -259,7 +270,7 @@ function intialLoad(error, topology, tornados, usGrey){
 
 		//enter animation
 		lines.filter(function(d){ return oldFilterObject[d.index] < newFilterObject[d.index]; })
-					.attr('opacity', 1)
+					.attr('opacity', function(d, i){ return opacityScale(d.fscale); })
 				.transition().duration(1400)
 					.attr("x2", function(d){ return d.x2; })
 					.attr("y2", function(d){ return d.y2; })
