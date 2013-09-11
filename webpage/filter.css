@@ -164,6 +164,7 @@ div.tooltip {
 
 .foreground.bar {
   fill: steelblue;
+  stroke-width: 0;
 }
 
 #mass-chart .foreground.bar {

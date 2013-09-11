@@ -62,7 +62,6 @@ queue()
 	.defer(d3.json, "us-states.json")
 	.defer(d3.csv, "filteredTornados.csv")
 	.defer(d3.json, "us.json")
-	//.defer(d3.csv, "drg/057.csv")
 	.await(intialLoad);
 
 function intialLoad(error, topology, tornados, usGrey){
@@ -78,8 +77,15 @@ function intialLoad(error, topology, tornados, usGrey){
 		t['y1'] = proj([t.slon, t.slat])[1];
 		t['x2'] = proj([t.elon, t.elat])[0];
 		t['y2'] = proj([t.elon, t.elat])[1];
-
+		//debugger;
+		t['angle'] = Math.atan(-(t.y2 - t.y1)/(t.x2 - t.x1))*180/Math.PI - 5;
+		t['angle'] = t['angle'] > 0 ? t['angle'] : t['angle'] + 360;
+		t['angle'] = t['angle'] ? t['angle'] : 0;
 	});
+
+	//remove those w/o angle
+	tornados = tornados.filter(function(d){ return d.angle != 0; });
+
 	vtornados = tornados.filter(function(d){ return d.length > 12; });
 
 	widthScale.range([.25, 2.6])
@@ -87,7 +93,7 @@ function intialLoad(error, topology, tornados, usGrey){
 	colorScale.range(['blue', 'red'])
 			  .domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
 	opacityScale.range(d3.range(.3, .8, .1))
-	          .domain(vtornados.map(function(d){ return d.fscale; }).sort());
+	          .domain(vtornados.map(function(d){ return d.fscale; }));
 
 	var defs = g.append("defs");
 
@@ -178,6 +184,9 @@ function intialLoad(error, topology, tornados, usGrey){
 	injury = tornadoCF.dimension(function(d){ return d.length; });
 	injurys = injury.group(function(d, i){ return d3.round(d, -1); });
 
+	angle = tornadoCF.dimension(function(d){ return d.angle; });
+	angles = angle.group(function(d, i){ return d3.round(d); });
+
 	var bCharts = [
 		barChart()
 			.dimension(fscale)
@@ -234,7 +243,11 @@ function intialLoad(error, topology, tornados, usGrey){
 
 		circleChart()
 			.dimension(month)
-			.group(months)
+			.group(months),		
+
+		circleChart()
+			.dimension(angle)
+			.group(angles)
 	];
 
 	d3.selectAll("#total")
@@ -278,7 +291,11 @@ function intialLoad(error, topology, tornados, usGrey){
 		oldFilterObject = newFilterObject;
 		
 		// update dealths/cost/ect here
-		// d3.select("#active").text(all.value());
+		visable = tornados.filter(function(d){ return newFilterObject[d.index] == 1; });
+		d3.select("#stats").text(all.value() +
+		 " Tornados traveled " 	+ d3.round(d3.sum(visable.map(function(d, i){ return d.length; }))) + " miles," +
+		 " injuring " + d3.sum(visable.map(function(d, i){ return d.inj; })) + " and causing $$$ damage");
+		//debugger;
 	}
 
 	window.breset = function(i){
