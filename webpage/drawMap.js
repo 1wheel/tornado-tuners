@@ -295,7 +295,6 @@ function intialLoad(error, topology, tornados, usGrey){
 		d3.select("#stats").text(all.value() +
 		 " Tornados traveled " 	+ d3.round(d3.sum(visable.map(function(d, i){ return d.length; }))) + " miles," +
 		 " injuring " + d3.sum(visable.map(function(d, i){ return d.inj; })) + " and causing $$$ damage");
-		//debugger;
 	}
 
 	window.breset = function(i){

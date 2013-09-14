@@ -36,15 +36,13 @@ for row in allTornadoA:
 
 writeKeys = ['time', 'states', 'fscale', 'inj', 'fat', 'loss', 'slat', 'slon', 'elat', 'elon', 'length', 'width']
 
-filteredA =	filter(lambda d: d['sg'] == '1'
+filteredA =	filter(	lambda d: d['sg'] == '1'
 						and  d['elon'] != '0'
-						and  d['fscale'] != '-9'
- 	, allTornadoA)
+						and  d['fscale'] != '-9', 
+					allTornadoA)
 
-import csv
 with open('webpage/filteredTornados.csv', 'wb') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',',
-                            quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(writeKeys)
     for row in filteredA:
     	nextRow = []
@@ -52,4 +50,3 @@ with open('webpage/filteredTornados.csv', 'wb') as csvfile:
     		nextRow.append(row[key])
     	writer.writerow(nextRow)
 
-#3313 w/ no set 3312...
