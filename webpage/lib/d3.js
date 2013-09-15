@@ -8604,7 +8604,7 @@ d3 = function() {
     x = null, 
     y = null, 
     resizes = [ "e", "w" ], 
-    extent = [ 0, 0 ],
+    extent = [Math.PI/8, Math.PI/2],
     extentDomain,
     brushGen = d3.svg.arc();
 
@@ -8654,9 +8654,10 @@ d3 = function() {
     }
 
     function redraw(g) {
-      g.selectAll(".resize").attr("transform", function(d) {
-        return "translate(" + extent[+/e$/.test(d)][0] + "," + extent[+/^s/.test(d)][1] + ")";
-      });
+      g.selectAll(".extent").attr("d", brushGen.startAngle(extent[0]).endAngle(extent[1]));
+      // g.selectAll(".resize").attr("transform", function(d) {
+      //   return "translate(" + extent[+/e$/.test(d)][0] + "," + extent[+/^s/.test(d)][1] + ")";
+      // });
     }
 
     function redrawX(g) {
@@ -8670,6 +8671,7 @@ d3 = function() {
     }
 
     function brushstart() {
+      console.log('b start');
       var target = this, 
       eventTarget = d3.select(d3.event.target), 
       event_ = event.of(target, arguments), 
@@ -8691,14 +8693,15 @@ d3 = function() {
                 .on("keyup.brush", keyup);
                 
       if (dragging) {
-        origin[0] = extent[0][0] - origin[0];
-        origin[1] = extent[0][1] - origin[1];
-      } else if (resizing) {
+        console.log('dragging');
+        origin = extent;
+        } else if (resizing) {
         var ex = +/w$/.test(resizing), ey = +/^n/.test(resizing);
         offset = [ extent[1 - ex][0] - origin[0], extent[1 - ey][1] - origin[1] ];
         origin[0] = extent[ex][0];
         origin[1] = extent[ey][1];
       } else if (d3.event.altKey) center = origin.slice();
+      
       g.style("pointer-events", "none").selectAll(".resize").style("display", null);
       d3.select("body").style("cursor", eventTarget.style("cursor"));
       event_({
@@ -8750,6 +8753,10 @@ d3 = function() {
           redrawY(g);
           moved = true;
         }
+        if (moveR(point)){
+          redraw(g);
+          moved = true;
+        }
         if (moved) {
           redraw(g);
           event_({
@@ -8758,6 +8765,29 @@ d3 = function() {
           });
         }
       }
+
+      function moveR(point){
+        console.log('moving');
+        var r0 = 0, 
+          r1 = Math.PI*2, 
+          position = origin, 
+          size = extent[1] - extent[0], 
+          min, 
+          max;
+
+          extent = [Math.atan2(point[0], point[1])- Math.PI/8, Math.atan2(point[0], point[1]) + Math.PI/8 ];
+
+        if (dragging) {
+          r0 -= position;
+          r1 -= size + position;
+        }
+        //min = Math.max(r0, Math.min(r1, point[i]));
+
+
+        return true;
+
+      }
+
       function move1(point, scale, i) {
         var range = d3_scaleRange(scale), r0 = range[0], r1 = range[1], position = origin[i], size = extent[1][i] - extent[0][i], min, max;
         if (dragging) {
@@ -8794,6 +8824,7 @@ d3 = function() {
         d3_eventCancel();
       }
     }
+
     brush.x = function(z) {
       if (!arguments.length) return x;
       x = z;
@@ -8814,27 +8845,7 @@ d3 = function() {
     }
 
     brush.extent = function(z) {
-      var x0, x1, y0, y1, t;
-      if (!arguments.length) {
-        z = extentDomain || extent;
-        if (x) {
-          x0 = z[0][0], x1 = z[1][0];
-          if (!extentDomain) {
-            x0 = extent[0][0], x1 = extent[1][0];
-            if (x.invert) x0 = x.invert(x0), x1 = x.invert(x1);
-            if (x1 < x0) t = x0, x0 = x1, x1 = t;
-          }
-        }
-        if (y) {
-          y0 = z[0][1], y1 = z[1][1];
-          if (!extentDomain) {
-            y0 = extent[0][1], y1 = extent[1][1];
-            if (y.invert) y0 = y.invert(y0), y1 = y.invert(y1);
-            if (y1 < y0) t = y0, y0 = y1, y1 = t;
-          }
-        }
-        return x && y ? [ [ x0, y0 ], [ x1, y1 ] ] : x ? [ x0, x1 ] : y && [ y0, y1 ];
-      }
+      if (!arguments.length) return extent; 
       extentDomain = [ [ 0, 0 ], [ 0, 0 ] ];
       if (x) {
         x0 = z[0], x1 = z[1];
@@ -8854,14 +8865,17 @@ d3 = function() {
       }
       return brush;
     };
+
     brush.clear = function() {
       extentDomain = null;
       extent[0][0] = extent[0][1] = extent[1][0] = extent[1][1] = 0;
       return brush;
     };
+
     brush.empty = function() {
       return x && extent[0][0] === extent[1][0] || y && extent[0][1] === extent[1][1];
     };
+
     return d3.rebind(brush, event, "on");
   };
   var d3_svg_brushCursor = {
