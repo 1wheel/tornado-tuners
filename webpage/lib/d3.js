@@ -8774,8 +8774,8 @@ d3 = function() {
           size = extent[1] - extent[0], 
           min, 
           max;
-
-          extent = [Math.atan2(point[0], point[1])- Math.PI/8, Math.atan2(point[0], point[1]) + Math.PI/8 ];
+          var θ = Math.atan2(point[0], -point[1]);
+          extent = [θ - Math.PI/8, θ + Math.PI/8 ];
 
         if (dragging) {
           r0 -= position;
