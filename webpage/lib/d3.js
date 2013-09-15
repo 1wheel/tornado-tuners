@@ -8603,7 +8603,7 @@ d3 = function() {
     var event = d3_eventDispatch(brush, "brushstart", "brush", "brushend"), 
     x = null, 
     y = null, 
-    resizes = [ "e", "w" ], 
+    resizes = [0, 1], 
     extent = [Math.PI/8, Math.PI/2],
     extentDomain,
     brushGen = d3.svg.arc();
@@ -8631,11 +8631,14 @@ d3 = function() {
           .style("cursor", "move");
 
         tz.enter().append("g")
-          .attr("class", function(d) { return "resize " + d; })
-          .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
-          .append("rect").attr("x", function(d) { return /[ew]$/.test(d) ? -3 : null; })
-          .attr("y", function(d) { return /^[ns]/.test(d) ? -3 : null; })
-          .attr("width", 6).attr("height", 6).style("visibility", "hidden");
+            .attr("class", function(d) { return "resize " + d; })
+            .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
+          .append("rect")
+            .attr("x", -3)
+            .attr("width", 6)
+            .attr("y", -brushGen.outerRadius()())
+            .attr("height", brushGen.outerRadius()() - brushGen.innerRadius()())
+            //.style("visibility", "hidden");
 
         tz.style("display", brush.empty() ? "none" : null);
         tz.exit().remove();
@@ -8655,6 +8658,7 @@ d3 = function() {
 
     function redraw(g) {
       g.selectAll(".extent").attr("d", brushGen.startAngle(extent[0]).endAngle(extent[1]));
+      g.selectAll(".resize").attr("transform", function(d, i){ return "rotate(" + toDegree(extent[d]) + ")" })
       // g.selectAll(".resize").attr("transform", function(d) {
       //   return "translate(" + extent[+/e$/.test(d)][0] + "," + extent[+/^s/.test(d)][1] + ")";
       // });

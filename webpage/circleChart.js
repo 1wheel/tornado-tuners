@@ -76,10 +76,10 @@ function circleChart() {
     //     .style("display", null);
     g.select(".bar")
     var s = d3.scale.linear().domain([-Math.PI, 0, Math.PI]).range([0, Math.PI, Math.PI*2]);
-    function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
-    function toDegree(r){ return r*180/Math.PI; }
+    // function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
+    // function toDegree(r){ return r*180/Math.PI; }
     function isBetween(i){ 
-      var θ = 360*i/numGroups; 
+      var θ = 360*(i/numGroups - .5/numGroups); 
       if (extentD[0] < extentD[1]){ return extentD[0] <= θ && θ <= extentD[1]; }
       return extentD[0] < θ || θ < extentD[1]; 
     }
