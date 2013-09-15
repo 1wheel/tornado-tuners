@@ -67,6 +67,29 @@ function circleChart() {
 
   }
 
+  brush.on("brush.chart", function() {
+    var g = d3.select(this.parentNode),
+        extent = brush.extent();
+    // if (round) g.select(".brush")
+    //     .call(brush.extent(extent = extent.map(round)))
+    //   .selectAll(".resize")
+    //     .style("display", null);
+    g.select(".bar")
+    var s = d3.scale.linear().domain([-Math.PI, 0, Math.PI]).range([0, Math.PI, Math.PI*2]);
+    function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
+    function toDegree(r){ return r*180/Math.PI; }
+    function isBetween(d, i){ 
+      var θ = 360*i/numGroups; 
+      if (extentD[0] < extentD[1]){ return extentD[0] <= θ && θ <= extentD[1]; }
+      return extentD[0] < θ || θ < extentD[1]; 
+    }
+
+    var extentD = extent.map(toPositiveRadian).map(toDegree);
+    console.log(d3.range(numGroups).filter(isBetween));
+
+    g.selectAll(".bar").style('fill', function(d, i){ return isBetween(d, i) ? 'green' : 'red'; });
+    //dimension.filterRange(extent);
+  });
 
   chart.margin = function(_) {
     if (!arguments.length) return margin;

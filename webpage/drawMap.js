@@ -1,3 +1,7 @@
+function p(name){
+	return function(d){ return d[name]; }
+}
+
 var width = 960,
 	height = 600,
 	centered;
@@ -134,11 +138,11 @@ function intialLoad(error, topology, tornados, usGrey){
 
 
 	lines = g.selectAll("line").data(vtornados).enter().append("line")
-			.attr("x1", function(d){ return d.x1; })
-			.attr("y1", function(d){ return d.y1; })
-			.attr("x2", function(d){ return d.x1; })
-			.attr("y2", function(d){ return d.y1; })
-			.attr("stroke-width",function(d){ return widthScale(d.width); })
+			.attr("x1", p('x1'))
+			.attr("y1", p('y1'))
+			.attr("x2", p('x1'))
+			.attr("y2", p('y1'))
+			.attr("stroke-width", function(d){ return widthScale(d.width); })
 			//.attr("id", function(d, i){ return "TNum" + i; })
 			.attr("stroke", function(d){ return colorScale(d.fscale); })
 			.attr("opacity", function(d){ return opacityScale(d.fscale); })
