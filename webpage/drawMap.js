@@ -2,6 +2,9 @@ function p(name){
 	return function(d){ return d[name]; }
 }
 
+function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
+function toDegree(r){ return r*180/Math.PI; }
+
 var width = 960,
 	height = 600,
 	centered;
@@ -82,13 +85,13 @@ function intialLoad(error, topology, tornados, usGrey){
 		t['x2'] = proj([t.elon, t.elat])[0];
 		t['y2'] = proj([t.elon, t.elat])[1];
 		//debugger;
-		t['angle'] = Math.atan(-(t.y2 - t.y1)/(t.x2 - t.x1))*180/Math.PI - 5;
-		t['angle'] = t['angle'] > 0 ? t['angle'] : t['angle'] + 360;
-		t['angle'] = t['angle'] ? t['angle'] : 0;
+		t['angle'] = Math.atan2(t.x2 - t.x1, -(t.y2 - t.y1));
+		t['angle'] = t['angle'] ? t['angle'] : 10000;
+		t['angle'] = toDegree(toPositiveRadian(t['angle']));
 	});
 
 	//remove those w/o angle
-	tornados = tornados.filter(function(d){ return d.angle != 0; });
+	tornados = tornados.filter(function(d){ return d.angle != 180; });
 
 	vtornados = tornados.filter(function(d){ return d.length > 12; });
 

@@ -78,7 +78,7 @@ function circleChart() {
     var s = d3.scale.linear().domain([-Math.PI, 0, Math.PI]).range([0, Math.PI, Math.PI*2]);
     function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
     function toDegree(r){ return r*180/Math.PI; }
-    function isBetween(d, i){ 
+    function isBetween(i){ 
       var θ = 360*i/numGroups; 
       if (extentD[0] < extentD[1]){ return extentD[0] <= θ && θ <= extentD[1]; }
       return extentD[0] < θ || θ < extentD[1]; 
@@ -87,8 +87,8 @@ function circleChart() {
     var extentD = extent.map(toPositiveRadian).map(toDegree);
     console.log(d3.range(numGroups).filter(isBetween));
 
-    g.selectAll(".bar").style('fill', function(d, i){ return isBetween(d, i) ? 'green' : 'red'; });
-    //dimension.filterRange(extent);
+    g.selectAll(".bar").style('fill', function(d, i){ return isBetween(i) ? 'green' : 'red'; });
+    dimension.filterFunction(isBetween)
   });
 
   chart.margin = function(_) {
