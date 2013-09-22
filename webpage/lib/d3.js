@@ -7832,6 +7832,7 @@ d3 = function() {
         }
       }
       function move1(point, scale, i) {
+        debugger;
         var range = d3_scaleRange(scale), r0 = range[0], r1 = range[1], position = origin[i], size = extent[1][i] - extent[0][i], min, max;
         if (dragging) {
           r0 -= position;
@@ -8631,13 +8632,15 @@ d3 = function() {
           .style("cursor", "move");
 
         tz.enter().append("g")
-            .attr("class", function(d) { return "resize " + d; })
-            .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
           .append("rect")
             .attr("x", -3)
             .attr("width", 6)
             .attr("y", -brushGen.outerRadius()())
             .attr("height", brushGen.outerRadius()() - brushGen.innerRadius()())
+            .attr("class", function(d) { return "resize " + d; })
+            .attr("class", function(d) { return "resize " + d; })
+            .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
+
             //.style("visibility", "hidden");
 
         tz.style("display", brush.empty() ? "none" : null);
@@ -8680,13 +8683,15 @@ d3 = function() {
       eventTarget = d3.select(d3.event.target), 
       event_ = event.of(target, arguments), 
       g = d3.select(target), 
-      resizing = eventTarget.datum(), 
+      resizing = eventTarget.datum(),
+      isResizing = eventTarget.classed("resize"), 
       resizingX = !/^(n|s)$/.test(resizing) && x, 
       resizingY = !/^(e|w)$/.test(resizing) && y, 
-      dragging = eventTarget.classed("extent"), 
+      dragging = eventTarget.classed("extent") || eventTarget.classed('background'), 
       center, 
       origin = mouse(), 
       offset;
+      initialθ = (extent[0] - extent[1])/2;
 
       var w = d3.select(d3_window)
                 .on("mousemove.brush", brushmove)
@@ -8699,12 +8704,15 @@ d3 = function() {
       if (dragging) {
         console.log('dragging');
         origin = extent;
-        } else if (resizing) {
-        var ex = +/w$/.test(resizing), ey = +/^n/.test(resizing);
-        offset = [ extent[1 - ex][0] - origin[0], extent[1 - ey][1] - origin[1] ];
-        origin[0] = extent[ex][0];
-        origin[1] = extent[ey][1];
-      } else if (d3.event.altKey) center = origin.slice();
+        } 
+      else if (isResizing) {
+        console.log('resizing');      
+
+        // var ex = +/w$/.test(resizing), ey = +/^n/.test(resizing);
+        // offset = [ extent[1 - ex][0] - origin[0], extent[1 - ey][1] - origin[1] ];
+        // origin[0] = extent[ex][0];
+        // origin[1] = extent[ey][1];
+      } 
       
       g.style("pointer-events", "none").selectAll(".resize").style("display", null);
       d3.select("body").style("cursor", eventTarget.style("cursor"));
@@ -8742,21 +8750,6 @@ d3 = function() {
           point[0] += offset[0];
           point[1] += offset[1];
         }
-        if (!dragging) {
-          if (d3.event.altKey) {
-            if (!center) center = [ (extent[0][0] + extent[1][0]) / 2, (extent[0][1] + extent[1][1]) / 2 ];
-            origin[0] = extent[+(point[0] < center[0])][0];
-            origin[1] = extent[+(point[1] < center[1])][1];
-          } else center = null;
-        }
-        if (resizingX && move1(point, x, 0)) {
-          redrawX(g);
-          moved = true;
-        }
-        if (resizingY && move1(point, y, 1)) {
-          redrawY(g);
-          moved = true;
-        }
         if (moveR(point)){
           redraw(g);
           moved = true;
@@ -8772,19 +8765,20 @@ d3 = function() {
 
       function moveR(point){
         console.log('moving');
-        var r0 = 0, 
-          r1 = Math.PI*2, 
-          position = origin, 
-          size = extent[1] - extent[0], 
+        var size = extent[1] - extent[0], 
           min, 
           max;
           var θ = Math.atan2(point[0], -point[1]);
-          extent = [θ - Math.PI/8, θ + Math.PI/8 ];
+          var size = extent[1] - extent[0];
+          
+          if (dragging){
+            extent = [θ - size/2, θ + size/2];
+          }
+          else{
+            extent[resizing] = θ;
+            console.log(θ);
+          }
 
-        if (dragging) {
-          r0 -= position;
-          r1 -= size + position;
-        }
         //min = Math.max(r0, Math.min(r1, point[i]));
 
 
