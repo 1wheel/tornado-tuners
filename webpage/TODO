@@ -1,4 +1,6 @@
 TODO
+	recenter over all map
+
 	zoomscale with bounding box to state
 
 	tool tips, are any needed? 
@@ -10,6 +12,11 @@ TODO
 		return range
 		show handles
 
+		label interier
+			N E S W
+			Jan Apr Jul Oct
+			0000 0600 1200 1800
+
 		direction
 		time of day
 		time of year
@@ -18,12 +25,11 @@ TODO
 
 	glowy effect?
 
-	map background
-
-	angle in correct
-
 	total cost
 	
 	log scales
 
 	custom color scale
+
+	compile correctly w/ SMASH
+		fork d3

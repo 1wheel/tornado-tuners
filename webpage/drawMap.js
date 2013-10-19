@@ -321,7 +321,7 @@ function intialLoad(error, topology, tornados, usGrey){
 	
 	var cChart = d3.selectAll(".cChart")
 			.data(cCharts)
-			.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
+			//.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
 
 	renderAll();
 }

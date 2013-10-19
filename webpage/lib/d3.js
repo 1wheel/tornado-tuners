@@ -6965,6 +6965,7 @@ d3 = function() {
     function arc() {
       var r0 = innerRadius.apply(this, arguments), r1 = outerRadius.apply(this, arguments), a0 = startAngle.apply(this, arguments) + d3_svg_arcOffset, a1 = endAngle.apply(this, arguments) + d3_svg_arcOffset, da = (a1 < a0 && (da = a0, 
       a0 = a1, a1 = da), a1 - a0), df = da < π ? "0" : "1", c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1);
+      console.log(a0 + ' ' + a1);
       return da >= d3_svg_arcMax ? r0 ? "M0," + r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + -r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + r1 + "M0," + r0 + "A" + r0 + "," + r0 + " 0 1,0 0," + -r0 + "A" + r0 + "," + r0 + " 0 1,0 0," + r0 + "Z" : "M0," + r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + -r1 + "A" + r1 + "," + r1 + " 0 1,1 0," + r1 + "Z" : r0 ? "M" + r1 * c0 + "," + r1 * s0 + "A" + r1 + "," + r1 + " 0 " + df + ",1 " + r1 * c1 + "," + r1 * s1 + "L" + r0 * c1 + "," + r0 * s1 + "A" + r0 + "," + r0 + " 0 " + df + ",0 " + r0 * c0 + "," + r0 * s0 + "Z" : "M" + r1 * c0 + "," + r1 * s0 + "A" + r1 + "," + r1 + " 0 " + df + ",1 " + r1 * c1 + "," + r1 * s1 + "L0,0" + "Z";
     }
     arc.innerRadius = function(v) {
@@ -8661,20 +8662,8 @@ d3 = function() {
 
     function redraw(g) {
       g.selectAll(".extent").attr("d", brushGen.startAngle(extent[0]).endAngle(extent[1]));
-      g.selectAll(".resize").attr("transform", function(d, i){ return "rotate(" + toDegree(extent[d]) + ")" })
-      // g.selectAll(".resize").attr("transform", function(d) {
-      //   return "translate(" + extent[+/e$/.test(d)][0] + "," + extent[+/^s/.test(d)][1] + ")";
-      // });
-    }
-
-    function redrawX(g) {
-      g.select(".extent").attr("x", extent[0][0]);
-      g.selectAll(".extent,.n>rect,.s>rect").attr("width", extent[1][0] - extent[0][0]);
-    }
-
-    function redrawY(g) {
-      g.select(".extent").attr("y", extent[0][1]);
-      g.selectAll(".extent,.e>rect,.w>rect").attr("height", extent[1][1] - extent[0][1]);
+      g.selectAll(".resize").attr("transform", function(d, i){ return "rotate(" + toDegree(extent[d]) + ")" });
+      console.log(brushGen.startAngle()() + " " + brushGen.endAngle()());
     }
 
     function brushstart() {
@@ -8702,11 +8691,9 @@ d3 = function() {
                 .on("keyup.brush", keyup);
                 
       if (dragging) {
-        console.log('dragging');
         origin = extent;
         } 
       else if (isResizing) {
-        console.log('resizing');      
 
         // var ex = +/w$/.test(resizing), ey = +/^n/.test(resizing);
         // offset = [ extent[1 - ex][0] - origin[0], extent[1 - ey][1] - origin[1] ];
@@ -8776,9 +8763,12 @@ d3 = function() {
           }
           else{
             extent[resizing] = θ;
-            console.log(θ);
+            // size = extent[1] - extent[0]
+
           }
 
+          console.log(θ);
+          console.log(extent);
         //min = Math.max(r0, Math.min(r1, point[i]));
 
 

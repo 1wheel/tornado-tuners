@@ -85,7 +85,7 @@ function circleChart() {
     }
 
     var extentD = extent.map(toPositiveRadian).map(toDegree);
-    console.log(d3.range(numGroups).filter(isBetween));
+    //console.log(d3.range(numGroups).filter(isBetween));
 
     g.selectAll(".bar").style('fill', function(d, i){ return isBetween(i) ? 'green' : 'red'; });
     dimension.filterFunction(isBetween)
