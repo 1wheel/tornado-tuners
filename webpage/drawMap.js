@@ -93,7 +93,7 @@ function intialLoad(error, topology, tornados, usGrey){
 	//remove those w/o angle
 	tornados = tornados.filter(function(d){ return d.angle != 180; });
 
-	vtornados = tornados.filter(function(d){ return d.length > 12; });
+	vtornados = tornados.filter(function(d){ return d.length > 15; });
 
 	widthScale.range([.25, 2.6])
 	          .domain(d3.extent(vtornados.map(function(d){ return d.width; })));
@@ -321,7 +321,7 @@ function intialLoad(error, topology, tornados, usGrey){
 	
 	var cChart = d3.selectAll(".cChart")
 			.data(cCharts)
-			//.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
+			.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
 
 	renderAll();
 }

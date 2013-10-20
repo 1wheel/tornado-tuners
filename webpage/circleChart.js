@@ -11,14 +11,14 @@ function circleChart() {
       round,
       barWidth,
       size = 200,
-      heightScale,
+      heightScale = d3.scale.linear().range([30, 100]),
       numGroups;
-
-  heightScale = d3.scale.linear().range([30, 100]);
 
   var arcGen = d3.svg.arc()
     .innerRadius( function(d, i){ return heightScale.range()[0]; })
-    .outerRadius( function(d, i){ return heightScale(d.value); })
+    .outerRadius( function(d, i){
+      if(isNaN(heightScale(d.value))){ debugger}
+      return heightScale(d.value); })
     .startAngle(  function(d, i){ return Math.PI*2/numGroups*(i - 1); })
     .endAngle(    function(d, i){ return Math.PI*2/numGroups*i; });
 
@@ -35,6 +35,7 @@ function circleChart() {
 
       // Create the skeletal chart.
       if (g.empty()) {
+        console.log('empty g');
         div.select(".title").append("a")
             .attr("href", "javascript:creset(" + id + ")")
             .attr("class", "reset")
@@ -59,7 +60,7 @@ function circleChart() {
 
     //d3.select('.cChart').select('svg').selectAll('.bar').each(function(d){ console.log(d); });      
      div.select("svg").selectAll(".bar")
-      .transition().duration(zoomRender ? 500 : 0)
+      //.transition().duration(zoomRender ? 500 : 0)
       .attr("d", arcGen);
     });
 
@@ -74,7 +75,7 @@ function circleChart() {
     //     .call(brush.extent(extent = extent.map(round)))
     //   .selectAll(".resize")
     //     .style("display", null);
-    g.select(".bar")
+    //g.select(".bar")
     var s = d3.scale.linear().domain([-Math.PI, 0, Math.PI]).range([0, Math.PI, Math.PI*2]);
     // function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
     // function toDegree(r){ return r*180/Math.PI; }
