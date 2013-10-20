@@ -7833,7 +7833,6 @@ d3 = function() {
         }
       }
       function move1(point, scale, i) {
-        debugger;
         var range = d3_scaleRange(scale), r0 = range[0], r1 = range[1], position = origin[i], size = extent[1][i] - extent[0][i], min, max;
         if (dragging) {
           r0 -= position;
@@ -8606,7 +8605,7 @@ d3 = function() {
     x = null, 
     y = null, 
     resizes = [0, 1], 
-    extent = [Math.PI/8, Math.PI/2],
+    extent = [Math.PI/2, Math.PI/2],
     extentDomain,
     brushGen = d3.svg.arc();
 
@@ -8623,26 +8622,23 @@ d3 = function() {
         bg.enter().append('path')
             .attr('class', 'background')
             .attr('d', brushGen.startAngle(0).endAngle(Math.PI*2))
-            .style('opacity', .2)
+            .style('opacity', 0)
             .style("cursor", "crosshair");
 
         fg.enter().append("path")
           .attr("class", "extent")
           .attr('d', brushGen.startAngle(0).endAngle(Math.PI/5))
-          .style('opacity', .5)
           .style("cursor", "move");
 
-        tz.enter().append("g")
+        var resize = tz.enter().append("g")
+            .attr("class", function(d) { return "resize " + d; })
+            .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
           .append("rect")
             .attr("x", -3)
             .attr("width", 6)
-            .attr("y", -brushGen.outerRadius()())
+            .attr("y", brushGen.innerRadius()())
             .attr("height", brushGen.outerRadius()() - brushGen.innerRadius()())
-            .attr("class", function(d) { return "resize " + d; })
-            .attr("class", function(d) { return "resize " + d; })
-            .style("cursor", function(d) { return d3_svg_brushCursor[d]; })
-
-            //.style("visibility", "hidden");
+            .style("opacity", 0);
 
         tz.style("display", brush.empty() ? "none" : null);
         tz.exit().remove();
@@ -8661,9 +8657,18 @@ d3 = function() {
     }
 
     function redraw(g) {
-      g.selectAll(".extent").attr("d", brushGen.startAngle(extent[0]).endAngle(extent[1]));
-      g.selectAll(".resize").attr("transform", function(d, i){ return "rotate(" + toDegree(extent[d]) + ")" });
-//      console.log(brushGen.startAngle()() + " " + brushGen.endAngle()());
+      if (extent[0] === extent[1]){
+        g.selectAll('.extent,.resize').style('display', 'none');
+      }
+      else{
+        var extentStart = extent[0] < extent[1] ? extent[0] : extent[0] - Math.PI*2;      
+        g.selectAll(".extent")
+            .attr("d", brushGen.startAngle(extentStart).endAngle(extent[1]));
+        g.selectAll(".resize")
+            .attr("transform", function(d, i){
+              return "rotate(" + (toDegree(extent[d]) + 180) + ")" });
+        g.selectAll('.extent,.resize').style('display', '');
+      }
     }
 
     function brushstart() {
@@ -8753,19 +8758,20 @@ d3 = function() {
       function moveR(point){
         //console.log('moving');
         var size = extent[1] - extent[0], 
-          min, 
-          max;
-          var θ = Math.atan2(point[0], -point[1]);
-          var size = extent[1] - extent[0];
-          
-          if (dragging){
-            extent = [θ - size/2, θ + size/2];
-          }
-          else{
-            extent[resizing] = θ;
-            // size = extent[1] - extent[0]
+            min, 
+            max,
+            θ = Math.atan2(point[0], -point[1]);
+        
+        size = size === 0 ? 1 : size;    
 
-          }
+        if (dragging){
+          extent = [θ - size/2, θ + size/2];
+        }
+        else{
+          extent[resizing] = θ;
+          // size = extent[1] - extent[0]
+
+        }
 
           //console.log(θ);
           //console.log(extent);
@@ -8777,7 +8783,13 @@ d3 = function() {
       }
 
       function move1(point, scale, i) {
-        var range = d3_scaleRange(scale), r0 = range[0], r1 = range[1], position = origin[i], size = extent[1][i] - extent[0][i], min, max;
+        var range = d3_scaleRange(scale), 
+            r0 = range[0], 
+            r1 = range[1], 
+            position = origin[i], 
+            size = extent[1][i] - extent[0][i], 
+            min, 
+            max;
         if (dragging) {
           r0 -= position;
           r1 -= size + position;

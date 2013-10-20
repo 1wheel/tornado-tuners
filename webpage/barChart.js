@@ -7,6 +7,7 @@ function barChart() {
       id = barChart.id++,
       axis = d3.svg.axis().orient("bottom"),
       brush = d3.svg.brush(),
+      tickFormat = d3.format(","),
       brushDirty,
       dimension,
       group,
@@ -147,14 +148,10 @@ function barChart() {
   chart.x = function(_) {
     if (!arguments.length) return x;
     x = _;
-    axis.scale(x).ticks(5).tickFormat(d3.format(","));
+    axis.scale(x).ticks(5).tickFormat(tickFormat);
     brush.x(x);
     return chart;
   };
-
-  function logFormat(d){
-    return "" + ((d <= 10000000) ? d : d.toExponential())
-  }
 
   chart.y = function(_) {
     if (!arguments.length) return y;
@@ -186,9 +183,16 @@ function barChart() {
     return chart;
   };
 
+
   chart.round = function(_) {
     if (!arguments.length) return round;
     round = _;
+    return chart;
+  };
+
+  chart.tickFormat = function(_) {
+    if (!arguments.length) return tickFormat;
+    tickFormat = _;
     return chart;
   };
 

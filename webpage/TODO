@@ -23,13 +23,18 @@ TODO
 
 		intial click removes first slice
 
+	bars
+		num bars
+		bar width
+		scale labels
+			correct (no f6)
+			format (1,990)
+
 	color for damage?
 
 	glowy effect?
 
-	total cost
 	
-	log scales
 
 	custom color scale
 

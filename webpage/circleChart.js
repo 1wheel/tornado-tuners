@@ -35,7 +35,6 @@ function circleChart() {
 
       // Create the skeletal chart.
       if (g.empty()) {
-        console.log('empty g');
         div.select(".title").append("a")
             .attr("href", "javascript:creset(" + id + ")")
             .attr("class", "reset")
@@ -55,6 +54,8 @@ function circleChart() {
             .attr("class", "foreground bar");
 
         var gBrush = g.append("g").attr("class", "brush").call(brush);
+        gBrush.selectAll(".resize")
+          .append("path").attr("d", resizePath);
       }
 
 
@@ -64,8 +65,20 @@ function circleChart() {
       .attr("d", arcGen);
     });
 
-
-
+    function resizePath(d) {
+      var e = +(d == 0),
+          x = e ? 1 : -1,
+          y = height/6;
+      return "M" + (.5 * x) + "," + y
+          + "A6,6 0 0 " + e + " " + (6.5 * x) + "," + (y + 6)
+          + "V" + (2 * y - 6)
+          + "A6,6 0 0 " + e + " " + (.5 * x) + "," + (2 * y)
+          + "Z"
+          + "M" + (2.5 * x) + "," + (y + 8)
+          + "V" + (2 * y - 8)
+          + "M" + (4.5 * x) + "," + (y + 8)
+          + "V" + (2 * y - 8);
+    }
   }
 
   brush.on("brush.chart", function() {
@@ -88,7 +101,7 @@ function circleChart() {
     var extentD = extent.map(toPositiveRadian).map(toDegree);
     //console.log(d3.range(numGroups).filter(isBetween));
 
-    g.selectAll(".bar").style('fill', function(d, i){ return isBetween(i) ? 'green' : 'red'; });
+    g.selectAll(".bar").style('fill', function(d, i){ return isBetween(i) ? 'steelblue' : '#ccc'; });
     dimension.filterFunction(isBetween)
   });
 

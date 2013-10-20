@@ -186,7 +186,7 @@ div.tooltip {
   font: 10px sans-serif;
 }
 
-.brush rect.extent {
+.brush .extent {
   fill: steelblue;
   fill-opacity: .125;
 }
@@ -197,7 +197,7 @@ div.tooltip {
 }
 
 #fscale-chart {
-  width: 130px;
+  width: 180px;
 }
 
 #year-chart {

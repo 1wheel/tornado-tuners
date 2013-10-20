@@ -96,11 +96,11 @@ function intialLoad(error, topology, tornados, usGrey){
 	vtornados = tornados.filter(function(d){ return d.length > 15; });
 
 	widthScale.range([.25, 2.6])
-	          .domain(d3.extent(vtornados.map(function(d){ return d.width; })));
+	    .domain(d3.extent(vtornados.map(function(d){ return d.width; })));
 	colorScale.range(['blue', 'red'])
-			  .domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
+			.domain(d3.extent(vtornados.map(function(d){ return d.fscale; })));
 	opacityScale.range(d3.range(.3, .8, .1))
-	          .domain(vtornados.map(function(d){ return d.fscale; }));
+	    .domain(vtornados.map(function(d){ return d.fscale; }));
 
 	var defs = g.append("defs");
 
@@ -178,17 +178,18 @@ function intialLoad(error, topology, tornados, usGrey){
 	year = tornadoCF.dimension(function(d){ return Math.floor(d.time.getFullYear()/1)*1; });
 	years = year.group();
 
-	tWidth = tornadoCF.dimension(function(d){ return d.length; });
-	widthLins = tWidth.group(function(d, i){ return d3.round(d, -1); });
-
-	var Wlb = 1.8;
+	var Wlb = 2.3;
+	tWidth = tornadoCF.dimension(function(d){ return d.width; });
 	widthLogs = tWidth.group(function(d, i){ 
-	 return Math.pow(Wlb, Math.floor(Math.log(d)/Math.log(Wlb))) + 1; });
+	 return Math.pow(Wlb, Math.floor(Math.log(d + 1)/Math.log(Wlb))); });	
 
+	var Llb = 1.8;
 	length = tornadoCF.dimension(function(d){ return d.length; });
-	lengths = length.group(function(d, i){ return d3.round(d, -1); });
+	//lengths = length.group(function(d, i){ return d3.round(d, -1); });
+	lengthLogs = length.group(function(d, i){ 
+	 return Math.pow(Llb, Math.floor(Math.log(d + 1)/Math.log(Llb))); });
 	
-	injury = tornadoCF.dimension(function(d){ return d.length; });
+	injury = tornadoCF.dimension(function(d){ return d.inj; });
 	injurys = injury.group(function(d, i){ return d3.round(d, -1); });
 
 	angle = tornadoCF.dimension(function(d){ return d.angle; });
@@ -199,41 +200,36 @@ function intialLoad(error, topology, tornados, usGrey){
 			.dimension(fscale)
 			.group(fscales)
 			.x(d3.scale.linear()
-				.domain([0, 7])
-				.rangeRound([0, 100]))
-			.barWidth(8),
+				.domain([0, 5.9])
+				.rangeRound([0, 150]))
+			.barWidth(18),
 
 		barChart()
 			.dimension(year)
 			.group(years)
+			.tickFormat(d3.format(''))
 			.x(d3.scale.linear()
 				.domain([1950, 2013])
-				.rangeRound([0,200]))
-			.barWidth(2),
-
-		barChart()
-			.dimension(tWidth)
-			.group(widthLins)
-			.x(d3.scale.linear()
-				.domain([0, d3.max(widthLins.all().map(function(d, i){ return d.key; }))])
-				.rangeRound([0,200]))
-			.barWidth(3),
+				.rangeRound([0,64*3]))
+			.barWidth(1.5),
 
 		barChart()
 			.dimension(tWidth)
 			.group(widthLogs)
+			.tickFormat(function(d){ return d3.format('.0f')(d-1); }, 3)
 			.x(d3.scale.log().base([Wlb])
-				.domain([1, d3.max(widthLogs.all().map(function(d, i){ return d.key; }))])
-				.rangeRound([0,200]))
-			.barWidth(3),
+				.domain([1, 70 +  d3.max(widthLogs.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0, 190]))
+			.barWidth(10),
 
 		barChart()
 			.dimension(length)
-			.group(lengths)
-			.x(d3.scale.linear()
-				.domain([0, d3.max(lengths.all().map(function(d, i){ return d.key; }))])
-				.rangeRound([0,200]))
-			.barWidth(3),
+			.group(lengthLogs)
+			.tickFormat(function(d){ return d3.format('.0f')(d-1); })			
+			.x(d3.scale.log().base([Llb])
+				.domain([1, d3.max(lengthLogs.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0, 200]))
+			.barWidth(10),
 
 		barChart()
 			.dimension(injury)
@@ -241,7 +237,7 @@ function intialLoad(error, topology, tornados, usGrey){
 			.x(d3.scale.linear()
 				.domain([0, d3.max(injurys.all().map(function(d, i){ return d.key; }))])
 				.rangeRound([0,200]))
-			.barWidth(3)	];
+			.barWidth(3)	]
 
 	cCharts = [
 		circleChart()
@@ -299,9 +295,20 @@ function intialLoad(error, topology, tornados, usGrey){
 		
 		// update dealths/cost/ect here
 		visable = tornados.filter(function(d){ return newFilterObject[d.index] == 1; });
-		d3.select("#stats").text(all.value() +
-		 " Tornados traveled " 	+ d3.round(d3.sum(visable.map(function(d, i){ return d.length; }))) + " miles," +
-		 " injuring " + d3.sum(visable.map(function(d, i){ return d.inj; })) + " and causing $$$ damage");
+		d3.select("#stats").text(
+			  d3.format(',')(all.value()) 
+			+	" tornados traveled " 	
+		 	+ d3.format(',.0f')(d3.sum(visable.map(function(d, i){ return d.length; }))) 
+		 	+ " miles "
+		 	+ " and injured " 
+		 	+ d3.format(',')(d3.sum(visable.map(function(d, i){ return d.inj; }))) 
+		 	+ " people.");
+
+		//remove extra width ticks (there is a better way of doing this!)
+		d3.select('#width-chart').selectAll('.major')
+				.filter(function(d, i){ return i % 2; })
+			.selectAll('text')
+				.remove();
 	}
 
 	window.breset = function(i){
