@@ -8867,13 +8867,12 @@ d3 = function() {
     };
 
     brush.clear = function() {
-      extentDomain = null;
-      extent[0][0] = extent[0][1] = extent[1][0] = extent[1][1] = 0;
+      extent = [0, 0];
       return brush;
     };
 
     brush.empty = function() {
-      return x && extent[0][0] === extent[1][0] || y && extent[0][1] === extent[1][1];
+      return extent[0] === extent[1];
     };
 
     return d3.rebind(brush, event, "on");
