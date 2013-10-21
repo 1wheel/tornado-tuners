@@ -26,7 +26,13 @@ h1 {
 
 #instructions{
   font-size: 90%;
-  margin-left: 50px;
+  margin-left: 160px;
+}
+
+#about{
+  display: inline-block;
+  text-align: right;
+  margin-left: 170px;
 }
 
 h1 + h2 {
@@ -100,10 +106,6 @@ div.tooltip {
   padding: 10px 0;
 }
 
-#about{
-  text-align: center;
-  font-size: 90%;
-}
 
 #links{
   text-align: right;
