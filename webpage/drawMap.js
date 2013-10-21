@@ -1,7 +1,6 @@
 function p(name){
 	return function(d){ return d[name]; }
 }
-
 function toPositiveRadian(r){ return r > 0 ? r : r + Math.PI*2; }
 function toDegree(r){ return r*180/Math.PI; }
 
@@ -93,7 +92,7 @@ function intialLoad(error, topology, tornados, usGrey){
 	//remove those w/o angle
 	tornados = tornados.filter(function(d){ return d.angle != 180; });
 
-	vtornados = tornados.filter(function(d){ return d.length > 25; });
+	vtornados = tornados.filter(function(d){ return d.length > 20; });
 
 	widthScale.range([.25, 2.6])
 	    .domain(d3.extent(vtornados.map(function(d){ return d.width; })));
@@ -189,8 +188,10 @@ function intialLoad(error, topology, tornados, usGrey){
 	lengthLogs = length.group(function(d, i){ 
 	 return Math.pow(Llb, Math.floor(Math.log(d + 1)/Math.log(Llb))); });
 	
+	var Ilb = 2;
 	injury = tornadoCF.dimension(function(d){ return d.inj; });
-	injurys = injury.group(function(d, i){ return d3.round(d, -1); });
+	injurys = injury.group(function(d, i){ 
+	 return Math.pow(Ilb, Math.floor(Math.log(d + 1)/Math.log(Ilb))); });
 
 	angle = tornadoCF.dimension(function(d){ return d.angle; });
 	angles = angle.group(function(d, i){ return d3.round(d); });
@@ -200,18 +201,10 @@ function intialLoad(error, topology, tornados, usGrey){
 			.dimension(fscale)
 			.group(fscales)
 			.x(d3.scale.linear()
-				.domain([0, 5.9])
-				.rangeRound([0, 150]))
+				.domain([0, 5.8])
+				.rangeRound([0, 130]))
 			.barWidth(18),
 
-		barChart()
-			.dimension(year)
-			.group(years)
-			.tickFormat(d3.format(''))
-			.x(d3.scale.linear()
-				.domain([1950, 2013])
-				.rangeRound([0,64*3]))
-			.barWidth(1.5),
 
 		barChart()
 			.dimension(tWidth)
@@ -227,17 +220,28 @@ function intialLoad(error, topology, tornados, usGrey){
 			.group(lengthLogs)
 			.tickFormat(function(d){ return d3.format('.0f')(d-1); })			
 			.x(d3.scale.log().base([Llb])
-				.domain([1, d3.max(lengthLogs.all().map(function(d, i){ return d.key; }))])
-				.rangeRound([0, 200]))
+				.domain([1, 60 + d3.max(lengthLogs.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0, 190]))
 			.barWidth(10),
 
 		barChart()
 			.dimension(injury)
 			.group(injurys)
+			.tickFormat(function(d){ return d3.format('.0f')(d-1); })			
+			.x(d3.scale.log().base([Ilb])
+				.domain([1, 100+  d3.max(injurys.all().map(function(d, i){ return d.key; }))])
+				.rangeRound([0, 200]))
+			.barWidth(3),	
+
+		barChart()
+			.dimension(year)
+			.group(years)
+			.tickFormat(d3.format(''))
 			.x(d3.scale.linear()
-				.domain([0, d3.max(injurys.all().map(function(d, i){ return d.key; }))])
-				.rangeRound([0,200]))
-			.barWidth(3)	]
+				.domain([1950, 2013])
+				.rangeRound([0,210]))
+			.barWidth(1.5)
+		]
 
 	cCharts = [
 		circleChart()
@@ -298,21 +302,15 @@ function intialLoad(error, topology, tornados, usGrey){
 		
 		// update dealths/distance/ect
 		visable = tornados.filter(function(d){ return newFilterObject[d.index] == 1; });
-		d3.select("#stats").text(
-			  d3.format(',')(all.value()) 
-			+	" tornados traveled " 	
-		 	+ d3.format(',.0f')(d3.sum(visable.map(function(d, i){ return d.length; }))) 
-		 	+ " miles "
-		 	+ " and injured " 
-		 	+ d3.format(',')(d3.sum(visable.map(function(d, i){ return d.inj; }))) 
-		 	+ " people.");
+		d3.select("#num").text(
+			d3.format(',')(all.value()));
+		d3.select("#miles").text(
+			d3.format(',.0f')(d3.sum(visable.map(function(d, i){ return d.length; }))));
+		d3.select("#inj").text(
+			d3.format(',')(d3.sum(visable.map(function(d, i){ return d.inj; }))));
 
-		//remove extra width ticks (there is a better way of doing this!)
-		d3.select('#width-chart').selectAll('.major')
-				.filter(function(d, i){ return i % 2; })
-			.selectAll('text')
-				.remove();
 	}
+
 
 	window.breset = function(i){
 		bCharts[i].filter(null);
@@ -334,4 +332,15 @@ function intialLoad(error, topology, tornados, usGrey){
 			.each(function(chart){ chart.on("brush", renderAll).on("brushend", renderAll) });
 
 	renderAll();
+
+	//remove extra width ticks (there is a better way of doing this!)
+	d3.select('#width-chart').selectAll('.major')
+			.filter(function(d, i){ return i % 2; })
+		.selectAll('text')
+			.remove();
+
+	d3.select('#inj-chart').selectAll('.major')
+			.filter(function(d, i){ return !(i % 2); })
+		.selectAll('text')
+			.remove();
 }

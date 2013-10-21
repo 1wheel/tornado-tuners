@@ -129,6 +129,7 @@ div.tooltip {
   height: 200px;
   width: 200px;
   margin-bottom: 20px;
+  float: left;
 }
 
 #map{
@@ -160,7 +161,7 @@ div.tooltip {
 
 .title{
   text-align: left;
-  margin-left: 40px;
+  margin-left: 10px;
   font-weight: bold;
 }
 
@@ -199,7 +200,7 @@ div.tooltip {
 }
 
 #fscale-chart {
-  width: 180px;
+  width: 140px;
 }
 
 #year-chart {
@@ -207,7 +208,7 @@ div.tooltip {
 }
 
 #width-chart {
-  width: 200px;
+  width: 210px;
 }
 
 #length-chart {
@@ -215,4 +216,42 @@ div.tooltip {
 }
 #inj-chart {
   width: 200px;
+}
+
+.textBlock{
+  display: inline-block;
+  height: 200px;
+  width: 200px;
+  margin-bottom: 20px;
+  vertical-align: text-top;
+  float:left;
+}
+
+#leftText{
+  font-size: 100%;
+  width: 160px;
+}
+
+#rightText{
+  font-size: 70%;
+  width: 250px;
+}
+
+.stat{
+  display: inline-block;
+  width: 80px;
+  margin-top: 19px;
+  font-size: 130%;
+  font-weight: bold;
+}
+
+#faq{
+  margin-left: 24px;
+  font-size: 142%;
+}
+
+.lineBreak{
+  display: inline-block;
+  width: 2500px;
+  height: 7px;
 }

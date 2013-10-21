@@ -1,7 +1,7 @@
 function circleChart() {
   if (!circleChart.id) circleChart.id = 0;
 
-  var margin = {top: 10, right: 10, bottom: 10, left: 10},
+  var margin = {top: 0, right: 0, bottom: 0, left: 0},
       id = circleChart.id++,
       axis = d3.svg.axis().orient("bottom"),
       brush = d3.svg.cbrush().innerRadius(30).outerRadius(100),
