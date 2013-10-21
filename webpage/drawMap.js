@@ -83,9 +83,8 @@ function intialLoad(error, topology, tornados, usGrey){
 		t['y1'] = proj([t.slon, t.slat])[1];
 		t['x2'] = proj([t.elon, t.elat])[0];
 		t['y2'] = proj([t.elon, t.elat])[1];
-		//debugger;
+
 		t['angle'] = Math.atan2(t.x2 - t.x1, -(t.y2 - t.y1));
-		t['angle'] = t['angle'] ? t['angle'] : 10000;
 		t['angle'] = toDegree(toPositiveRadian(t['angle']));
 	});
 
@@ -203,8 +202,7 @@ function intialLoad(error, topology, tornados, usGrey){
 			.x(d3.scale.linear()
 				.domain([0, 5.8])
 				.rangeRound([0, 130]))
-			.barWidth(18),
-
+			.barWidth(10),
 
 		barChart()
 			.dimension(tWidth)
@@ -229,9 +227,9 @@ function intialLoad(error, topology, tornados, usGrey){
 			.group(injurys)
 			.tickFormat(function(d){ return d3.format('.0f')(d-1); })			
 			.x(d3.scale.log().base([Ilb])
-				.domain([1, 100+  d3.max(injurys.all().map(function(d, i){ return d.key; }))])
+				.domain([1, 500+  d3.max(injurys.all().map(function(d, i){ return d.key; }))])
 				.rangeRound([0, 200]))
-			.barWidth(3),	
+			.barWidth(10),	
 
 		barChart()
 			.dimension(year)
@@ -240,7 +238,7 @@ function intialLoad(error, topology, tornados, usGrey){
 			.x(d3.scale.linear()
 				.domain([1950, 2013])
 				.rangeRound([0,210]))
-			.barWidth(1.5)
+			.barWidth(1)
 		]
 
 	cCharts = [
