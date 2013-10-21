@@ -8,6 +8,7 @@ function circleChart() {
       brushDirty,
       dimension,
       group,
+      label = [],
       round,
       barWidth,
       size = 200,
@@ -56,6 +57,16 @@ function circleChart() {
         var gBrush = g.append("g").attr("class", "brush").call(brush);
         gBrush.selectAll(".resize")
           .append("path").attr("d", resizePath);
+
+        g.append('g')
+            .classed('axis', true)
+          .selectAll('text')
+            .data(label).enter()
+          .append('text')
+            .text(function(d, i){ return d; })
+            .attr('text-anchor', 'middle')
+            .attr('x', function(d, i){ return !(i % 2) ? 0 :  i == 1 ?  20 : -20; })
+            .attr('y', function(d, i){ return  (i % 2) ? 4 :  i == 0 ? -16 :  24; });
       }
 
 
@@ -68,9 +79,10 @@ function circleChart() {
       if (brushDirty){
         brushDirty = false;
         g.selectAll('.brush').call(brush);
+
         //only works for reseting...
         if (brush.empty()){
-          g.selectAll('.bar').style('fill', '#steelblue');
+          g.selectAll('.bar').style('fill', 'steelblue');
         }
       }
     });
@@ -142,6 +154,12 @@ function circleChart() {
     round = _;
     return chart;
   };
+
+  chart.label = function(_){
+    if (!arguments.length) return label;
+    label = _;
+    return chart;
+  }
 
   return d3.rebind(chart, brush, "on");
 }

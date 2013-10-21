@@ -242,15 +242,18 @@ function intialLoad(error, topology, tornados, usGrey){
 	cCharts = [
 		circleChart()
 			.dimension(hour)
-			.group(hours),
+			.group(hours)
+			.label(['12AM', '6AM', '12PM', '6PM']),
 
 		circleChart()
 			.dimension(month)
-			.group(months),		
+			.group(months)
+			.label(['JAN', 'APR', 'JUL', 'OCT']),		
 
 		circleChart()
 			.dimension(angle)
 			.group(angles)
+			.label(['N', 'E', 'S', 'W'])
 	];
 
 	d3.selectAll("#total")
@@ -293,7 +296,7 @@ function intialLoad(error, topology, tornados, usGrey){
 
 		oldFilterObject = newFilterObject;
 		
-		// update dealths/cost/ect here
+		// update dealths/distance/ect
 		visable = tornados.filter(function(d){ return newFilterObject[d.index] == 1; });
 		d3.select("#stats").text(
 			  d3.format(',')(all.value()) 

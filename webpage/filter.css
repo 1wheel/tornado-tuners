@@ -182,7 +182,7 @@ div.tooltip {
   shape-rendering: crispEdges;
 }
 
-.axis text {
+.axis  {
   font: 10px sans-serif;
 }
 
