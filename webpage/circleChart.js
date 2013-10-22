@@ -65,7 +65,7 @@ function circleChart() {
           .append('text')
             .text(function(d, i){ return d; })
             .attr('text-anchor', 'middle')
-            .attr('x', function(d, i){ return !(i % 2) ? 0 :  i == 1 ?  20 : -20; })
+            .attr('x', function(d, i){ return !(i % 2) ? 0 :  i == 1 ?  18 : -18; })
             .attr('y', function(d, i){ return  (i % 2) ? 4 :  i == 0 ? -16 :  24; });
       }
 
